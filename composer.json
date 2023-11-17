@@ -1,0 +1,19 @@
+{
+    "name": "phpgen/phpgen",
+    "description": "PHP source code generator",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "PHPGen\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "localusercamp",
+            "email": "user062199@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
