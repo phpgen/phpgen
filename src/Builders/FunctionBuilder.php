@@ -40,12 +40,12 @@ class FunctionBuilder implements Exportable
         }
 
         // TODO: Find a way to parse closure body.
-        // $body = '';
-        // $lines = file($reflection->getFileName());
-        // for($l = $reflection->getStartLine(); $l < $reflection->getEndLine(); $l++) {
-        //     $body .= $lines[$l];
-        // }
-        // $this->body($body);
+        $body = '';
+        $lines = file($reflection->getFileName());
+        for($l = $reflection->getStartLine() - 1; $l < $reflection->getEndLine(); $l++) {
+            $body .= $lines[$l];
+        }
+        $that->body($body);
 
         return $that;
     }
@@ -98,7 +98,7 @@ class FunctionBuilder implements Exportable
     }
 
 
-    
+
     public function __toString(): string
     {
         $parameters = implode(', ', $this->parameters);

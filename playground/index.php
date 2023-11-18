@@ -28,6 +28,4 @@ echo MethodBuilder::make('sum')
 
 echo "\n";
 
-echo MethodBuilder::fromClosure('sum', function (int $a, int $b): int {
-    return $a + $b;
-})->body('return $a + $b;');
+echo MethodBuilder::fromClosure('sum', function (int $a, int $b): int { return $a + $b; });
