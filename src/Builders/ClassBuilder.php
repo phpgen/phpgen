@@ -132,6 +132,8 @@ class ClassBuilder implements Stringable
         // TODO: Need to solve problem with nesting bodies of things!
         $methods = implode("\n", array_map(fn ($line) => "{$space}{$line}", explode("\n", $methods)));
 
-        return "class {$this->name}\n{\n{$methods}\n}";
+        $final = $this->isFinal ? 'final' : '';
+
+        return trim("{$final} class {$this->name}\n{\n{$methods}\n}", ' ');
     }
 }
