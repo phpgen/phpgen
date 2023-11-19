@@ -1,7 +1,9 @@
 <?php
 
 namespace PHPGen\Builders;
+
 use PHPGen\Enums\MethodVisibility;
+use ReflectionFunctionAbstract;
 
 class MethodBuilder extends FunctionBuilder
 {
@@ -10,16 +12,23 @@ class MethodBuilder extends FunctionBuilder
 
 
     /**
-     * Create new instance from FunctionBuilder instance
+     * Create new instance from reflection.
+     */
+    public static function fromReflection(ReflectionFunctionAbstract $reflection): static
+    {
+        return parent::fromReflection($reflection)
+            ->visibility(MethodVisibility::tryFromReflection($reflection));
+    }
+
+    /**
+     * Create new instance from FunctionBuilder.
      */
     public static function fromFunctionBuilder(FunctionBuilder $function): static
     {
-        $that = new static($function->getName());
-        $that->parameters = $function->getParameters();
-        $that->return = $function->getReturn();
-        $that->body = $function->getBody();
-
-        return $that;
+        return static::make($function->getName())
+            ->parameters($function->getParameters())
+            ->return($function->getReturn())
+            ->body($function->getBody());
     }
 
 
@@ -55,12 +64,5 @@ class MethodBuilder extends FunctionBuilder
         $result = parent::__toString();
         
         return trim("{$this->visibility?->value} {$result}", ' ');
-    }
-
-    public function toArray(): array
-    {
-        // TODO
-
-        return [];
     }
 }

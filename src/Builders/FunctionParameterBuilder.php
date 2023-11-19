@@ -2,10 +2,10 @@
 
 namespace PHPGen\Builders;
 
-use PHPGen\Contracts\Exportable;
 use ReflectionParameter;
+use Stringable;
 
-class FunctionParameterBuilder implements Exportable
+class FunctionParameterBuilder implements Stringable
 {
     protected ?string $type = null;
     protected string $name;
@@ -22,9 +22,12 @@ class FunctionParameterBuilder implements Exportable
         return new static($name);
     }
 
-    public static function fromReflection(ReflectionParameter $parameter): static
+    public static function fromReflection(ReflectionParameter $reflection): static
     {
-        return static::make($parameter->getName())->type($parameter->getType()?->getName());
+        // `$reflection->getType()?->getName()` is undocumented, but exists!
+
+        return static::make($reflection->getName())
+            ->type($reflection->getType()?->getName());
     }
 
 
@@ -46,15 +49,5 @@ class FunctionParameterBuilder implements Exportable
     public function __toString(): string
     {
         return trim("{$this->type} \${$this->name}");
-    }
-
-    public function toArray(): array
-    {
-        return [];
-    }
-
-    public function toJson(): string
-    {
-        return json_encode($this->toArray());
     }
 }

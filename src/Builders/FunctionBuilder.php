@@ -2,11 +2,13 @@
 
 namespace PHPGen\Builders;
 
-use PHPGen\Contracts\Exportable;
-
 use Closure;
+use ReflectionFunction;
+use ReflectionFunctionAbstract;
+use ReflectionParameter;
+use Stringable;
 
-class FunctionBuilder implements Exportable
+class FunctionBuilder implements Stringable
 {
     protected string $name;
     protected array $parameters = [];
@@ -29,33 +31,30 @@ class FunctionBuilder implements Exportable
     }
 
     /**
-     * Create new instance from Closure
+     * Create new instance from reflection.
      */
-    public static function fromClosure(string $name, Closure $closure): static
+    public static function fromReflection(ReflectionFunctionAbstract $reflection): static
     {
-        return new static($name);
-
-        // TODO
-        // $reflection = new \ReflectionFunction($closure);
-
-        // $that = new static($name);
-
-        // $that->parameters(
-        //     array_map(FunctionParameterBuilder::fromReflection(...), $reflection->getParameters())
-        // );
-
-        // if ($reflection->hasReturnType()) {
-        //     $that->return($reflection->getReturnType()->getName());
-        // }
+        // TODO: Parse body
+        return static::make($reflection->getName())
+            ->parameters($reflection->getParameters())
+            ->return($reflection->getReturnType());
 
         // $body = '';
         // $lines = file($reflection->getFileName());
         // for($l = $reflection->getStartLine() - 1; $l < $reflection->getEndLine(); $l++) {
         //     $body .= $lines[$l];
         // }
-        // $that->body($body);
+    }
 
-        // return $that;
+    /**
+     * Create new instance from Closure.
+     */
+    public static function fromClosure(string $name, Closure $closure): static
+    {
+        $reflection = new ReflectionFunction($closure);
+
+        return static::fromReflection($reflection)->name($name);
     }
 
 
@@ -81,11 +80,16 @@ class FunctionBuilder implements Exportable
     /**
      * Set parameters
      * 
-     * @param array<FunctionParameterBuilder> $parameters
+     * @param array<FunctionParameterBuilder|ReflectionParameter> $parameters
      */
     public function parameters(array $parameters): static
     {
-        $this->parameters = $parameters;
+        // TODO: Transfer to FunctionParameterBuilder::parse()
+        $this->parameters = array_map(fn (FunctionParameterBuilder|ReflectionParameter $parameter) => match (true) {
+            $parameter instanceof ReflectionParameter => FunctionParameterBuilder::fromReflection($parameter),
+            default => $parameter,
+        }, $parameters);
+        
         return $this;
     }
 
@@ -101,7 +105,7 @@ class FunctionBuilder implements Exportable
     /**
      * Set return type
      */
-    public function return(string $type): static
+    public function return(?string $type): static
     {
         $this->return = $type;
         return $this;

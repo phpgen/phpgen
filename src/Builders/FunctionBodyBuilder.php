@@ -2,9 +2,9 @@
 
 namespace PHPGen\Builders;
 
-use PHPGen\Contracts\Exportable;
+use Stringable;
 
-class FunctionBodyBuilder implements Exportable
+class FunctionBodyBuilder implements Stringable
 {
     protected array $lines = []; 
 
@@ -46,15 +46,5 @@ class FunctionBodyBuilder implements Exportable
         if (count($this->lines) === 0) return "{\n\n}";
 
         return "{\n" . implode("\n", array_map(fn ($line) => "{$space}{$line}", $this->lines)) . "\n}";
-    }
-
-    public function toArray(): array
-    {
-        return $this->lines;
-    }
-
-    public function toJson(): string
-    {
-        return json_encode($this->toArray());
     }
 }
