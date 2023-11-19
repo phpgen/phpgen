@@ -2,10 +2,18 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
+use PHPGen\Builders\FunctionBodyBuilder;
 use PHPGen\Builders\FunctionBuilder;
 use PHPGen\Builders\FunctionParameterBuilder;
 use PHPGen\Builders\MethodBuilder;
 
+echo FunctionBodyBuilder::make([
+    '$a = "foo";',
+    '$b = "bar";',
+    'return $a . $b;',
+]);
+
+echo "\n";
 
 echo FunctionBuilder::make('sum')
     ->parameters([
@@ -28,4 +36,4 @@ echo MethodBuilder::make('sum')
 
 echo "\n";
 
-echo MethodBuilder::fromClosure('sum', function (int $a, int $b): int { return $a + $b; });
+// echo MethodBuilder::fromClosure('sum', function (int $a, int $b): int { return $a + $b; });

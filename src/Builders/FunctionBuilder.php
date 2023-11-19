@@ -11,7 +11,7 @@ class FunctionBuilder implements Exportable
     protected string $name;
     protected array $parameters = [];
     protected ?string $return = null;
-    protected ?string $body = null;
+    protected ?FunctionBodyBuilder $body = null;
 
 
 
@@ -20,38 +20,49 @@ class FunctionBuilder implements Exportable
         $this->name = $name;
     }
 
+    /**
+     * Create new instance
+     */
     public static function make(string $name): static
     {
         return new static($name);
     }
 
+    /**
+     * Create new instance from Closure
+     */
     public static function fromClosure(string $name, Closure $closure): static
     {
-        $reflection = new \ReflectionFunction($closure);
+        return new static($name);
 
-        $that = new static($name);
+        // TODO
+        // $reflection = new \ReflectionFunction($closure);
 
-        $that->parameters(
-            array_map(FunctionParameterBuilder::fromReflection(...), $reflection->getParameters())
-        );
+        // $that = new static($name);
 
-        if ($reflection->hasReturnType()) {
-            $that->return($reflection->getReturnType()->getName());
-        }
+        // $that->parameters(
+        //     array_map(FunctionParameterBuilder::fromReflection(...), $reflection->getParameters())
+        // );
 
-        // TODO: Find a way to parse closure body.
-        $body = '';
-        $lines = file($reflection->getFileName());
-        for($l = $reflection->getStartLine() - 1; $l < $reflection->getEndLine(); $l++) {
-            $body .= $lines[$l];
-        }
-        $that->body($body);
+        // if ($reflection->hasReturnType()) {
+        //     $that->return($reflection->getReturnType()->getName());
+        // }
 
-        return $that;
+        // $body = '';
+        // $lines = file($reflection->getFileName());
+        // for($l = $reflection->getStartLine() - 1; $l < $reflection->getEndLine(); $l++) {
+        //     $body .= $lines[$l];
+        // }
+        // $that->body($body);
+
+        // return $that;
     }
 
 
 
+    /**
+     * Set name
+     */
     public function name(string $name): static
     {
         $this->name = $name;
@@ -59,6 +70,17 @@ class FunctionBuilder implements Exportable
     }
 
     /**
+     * Get name
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+
+    /**
+     * Set parameters
+     * 
      * @param array<FunctionParameterBuilder> $parameters
      */
     public function parameters(array $parameters): static
@@ -67,34 +89,69 @@ class FunctionBuilder implements Exportable
         return $this;
     }
 
+    /**
+     * Get parameters
+     */
+    public function getParameters(): array
+    {
+        return $this->parameters;
+    }
+
+
+    /**
+     * Set return type
+     */
     public function return(string $type): static
     {
         $this->return = $type;
         return $this;
     }
 
-    public function body(string $body): static
+    /**
+     * Get return type
+     */
+    public function getReturn(): ?string
     {
-        $this->body = $body;
-        return $this;
+        return $this->return;
     }
 
 
-
-    protected function prepareBodyForExport(): string
+    /**
+     * Set body
+     * 
+     * @param null|string|array<string>|FunctionBodyBuilder $body
+     */
+    public function body(null|string|array|FunctionBodyBuilder $body): static
     {
-        // TODO: Must be replaced by calling MethodBodyBuilder::__toString()
-        $tab = 4;
-        $space = str_repeat(' ', $tab);
-        
-        if (!$this->body) return "{$space}//";
-
-        $rows = explode("\n", $this->body);
-        foreach ($rows as $i => $row) {
-            $rows[$i] = "{$space}{$row}";
+        if ($body === null) {
+            if ($this->body === null) {
+                return $this;
+            }
+            else {
+                $this->body = null;
+                return $this;
+            }
         }
 
-        return implode("\n", $rows);
+        if ($body instanceof FunctionBodyBuilder) {
+            $this->body = $body;
+        }
+        else if (is_array($body)) {
+            $this->body = FunctionBodyBuilder::make($body);
+        }
+        else {
+            $this->body = FunctionBodyBuilder::fromString($body);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get body
+     */
+    public function getBody(): ?FunctionBodyBuilder
+    {
+        return $this->body;
     }
 
 
@@ -103,10 +160,12 @@ class FunctionBuilder implements Exportable
     {
         $parameters = implode(', ', $this->parameters);
         $result = "function {$this->name}({$parameters})";
+
         if ($this->return) {
             $result .= ": {$this->return}";
         }
-        $result .= "\n{\n{$this->prepareBodyForExport()}\n}";
+
+        $result .= "\n" . ($this->body ?? FunctionBodyBuilder::make());
         
         return $result;
     }

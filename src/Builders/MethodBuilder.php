@@ -9,6 +9,21 @@ class MethodBuilder extends FunctionBuilder
 
 
 
+    /**
+     * Create new instance from FunctionBuilder instance
+     */
+    public static function fromFunctionBuilder(FunctionBuilder $function): static
+    {
+        $that = new static($function->getName());
+        $that->parameters = $function->getParameters();
+        $that->return = $function->getReturn();
+        $that->body = $function->getBody();
+
+        return $that;
+    }
+
+
+
     public function visibility(?MethodVisibility $visibility): static
     {
         $this->visibility = $visibility;
