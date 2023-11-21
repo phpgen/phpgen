@@ -14,6 +14,12 @@ class ClassBuilder implements Stringable
 
     protected bool $isAbstract = false;
 
+    protected bool $isReadonly = false;
+
+    protected ?string $extends = null;
+
+
+
     protected array $methods = [];
 
 
@@ -36,21 +42,18 @@ class ClassBuilder implements Stringable
      */
     public static function fromReflection(ReflectionClass $reflection): static
     {
-        return static::make($reflection->getName())
+        return static::make($reflection->isAnonymous() ? 'Anonymous' : $reflection->getName())
             ->final($reflection->isFinal())
             ->abstract($reflection->isAbstract())
             ->methods($reflection->getMethods());
     }
 
     /**
-     * Create new instance from anonymous class
+     * Create new instance from object
      */
-    public static function fromAnonymous(string $name, object $anonymous): static
+    public static function fromObject(object $anonymous): static
     {
-        $reflection = new ReflectionClass($anonymous);
-
-        return static::fromReflection($reflection)
-            ->name($name);
+        return static::fromReflection(new ReflectionClass($anonymous));
     }
 
 
@@ -75,6 +78,10 @@ class ClassBuilder implements Stringable
 
     public function final(bool $final = true): static
     {
+        if ($final && $this->isAbstract) {
+            throw new \Exception('PHP class cannot be both final and abstract.');
+        }
+
         $this->isFinal = $final;
         return $this;
     }
@@ -87,6 +94,10 @@ class ClassBuilder implements Stringable
 
     public function abstract(bool $abstract = true): static
     {
+        if ($abstract && $this->isFinal) {
+            throw new \Exception('PHP class cannot be both final and abstract.');
+        }
+
         $this->isAbstract = $abstract;
         return $this;
     }
@@ -94,6 +105,34 @@ class ClassBuilder implements Stringable
     public function isAbstract(): bool
     {
         return $this->isAbstract;
+    }
+
+
+    public function readonly(bool $readonly = true): static
+    {
+        $this->isReadonly = $readonly;
+        return $this;
+    }
+
+    public function isReadonly(): bool
+    {
+        return $this->isReadonly;
+    }
+
+
+    public function extends(?string $extends): static
+    {
+        if ($extends === '') {
+            throw new \Exception('extends must contain valid class name.');
+        }
+
+        $this->extends = $extends;
+        return $this;
+    }
+
+    public function getExtends(): ?string
+    {
+        return $this->extends;
     }
 
 
@@ -133,7 +172,11 @@ class ClassBuilder implements Stringable
         $methods = implode("\n", array_map(fn ($line) => "{$space}{$line}", explode("\n", $methods)));
 
         $final = $this->isFinal ? 'final' : '';
+        $abstract = $this->isAbstract ? 'abstract' : '';
+        $readonly = $this->isReadonly ? 'readonly' : '';
 
-        return trim("{$final} class {$this->name}\n{\n{$methods}\n}", ' ');
+        $extends = $this->extends ? "extends {$this->extends}" : ''; 
+
+        return trim("{$final}{$abstract} {$readonly}") . " " . trim("class {$this->name} {$extends}") . "\n{\n{$methods}\n}";
     }
 }
