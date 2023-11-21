@@ -38,4 +38,4 @@ echo buildClass('Foo')->readonly()->final();
 
 echo "\n\n";
 
-echo buildClass('Custom')->readonly()->abstract()->extends('CustomAbstract');
+echo buildClass('Custom')->readonly()->abstract()->extends('CustomAbstract')->implements(['Stringable', 'Arrayable']);

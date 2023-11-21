@@ -18,7 +18,7 @@ class ClassBuilder implements Stringable
 
     protected ?string $extends = null;
 
-
+    protected array $implements = [];
 
     protected array $methods = [];
 
@@ -76,6 +76,7 @@ class ClassBuilder implements Stringable
     }
 
 
+
     public function final(bool $final = true): static
     {
         if ($final && $this->isAbstract) {
@@ -90,6 +91,7 @@ class ClassBuilder implements Stringable
     {
         return $this->isFinal;
     }
+
 
 
     public function abstract(bool $abstract = true): static
@@ -108,6 +110,7 @@ class ClassBuilder implements Stringable
     }
 
 
+
     public function readonly(bool $readonly = true): static
     {
         $this->isReadonly = $readonly;
@@ -118,6 +121,7 @@ class ClassBuilder implements Stringable
     {
         return $this->isReadonly;
     }
+
 
 
     public function extends(?string $extends): static
@@ -134,6 +138,25 @@ class ClassBuilder implements Stringable
     {
         return $this->extends;
     }
+
+
+
+    public function implements(array $implements): static
+    {
+        // FEAT: Overload to accept not only strings =/
+        $this->implements = array_filter($implements, fn (string $implement) => (bool) $implement);
+        
+        return $this;
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getImplements(): array
+    {
+        return $this->implements;
+    }
+
 
 
     /**
@@ -175,8 +198,10 @@ class ClassBuilder implements Stringable
         $abstract = $this->isAbstract ? 'abstract' : '';
         $readonly = $this->isReadonly ? 'readonly' : '';
 
-        $extends = $this->extends ? "extends {$this->extends}" : ''; 
+        $extends = $this->extends ? "extends {$this->extends}" : '';
 
-        return trim("{$final}{$abstract} {$readonly}") . " " . trim("class {$this->name} {$extends}") . "\n{\n{$methods}\n}";
+        $implements = $this->implements ? "implements " . implode(', ', $this->implements) : '';
+
+        return trim("{$final}{$abstract} {$readonly}") . " " . trim("class {$this->name} {$extends}") . " " . $implements . "\n{\n{$methods}\n}";
     }
 }
