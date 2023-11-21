@@ -6,7 +6,10 @@
     "autoload": {
         "psr-4": {
             "PHPGen\\": "src/"
-        }
+        },
+        "files": [
+            "src/helpers.php"
+        ]
     },
     "authors": [
         {
