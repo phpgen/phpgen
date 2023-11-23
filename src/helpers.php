@@ -7,9 +7,9 @@ use PHPGen\Builders\ClassBuilder;
 /**
  * Create PHP class builder
  * 
- * @param string|\ReflectionClass|object $from
+ * @param null|string|\ReflectionClass|object $from
  */
-function buildClass(string|object $from): ClassBuilder {
+function buildClass(null|string|object $from = null): ClassBuilder {
     if ($from instanceof \ReflectionClass) {
         return ClassBuilder::fromReflection($from);
     }
@@ -20,7 +20,5 @@ function buildClass(string|object $from): ClassBuilder {
         return ClassBuilder::make($from);
     }
 
-    $type = gettype($from);
-
-    throw new \Exception("Cannot create ClassBuilder from type {$type}.");
+    return ClassBuilder::make();
 }

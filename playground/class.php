@@ -17,7 +17,7 @@ echo ClassBuilder::fromObject(new class {
     {
         return $s + $isBool;
     }
-})->name('MyClass');
+});
 
 echo "\n\n";
 
@@ -38,4 +38,4 @@ echo buildClass('Foo')->readonly()->final();
 
 echo "\n\n";
 
-echo buildClass('Custom')->readonly()->abstract()->extends('CustomAbstract')->implements(['Stringable', 'Arrayable']);
+echo buildClass()->readonly()->abstract()->extends('CustomAbstract')->implements(['Stringable', 'Arrayable']);

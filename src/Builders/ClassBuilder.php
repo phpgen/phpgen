@@ -2,13 +2,19 @@
 
 namespace PHPGen\Builders;
 
+use PHPGen\Builders\Concerns\HasExtends;
+use PHPGen\Builders\Concerns\HasImplements;
+use PHPGen\Builders\Concerns\HasName;
 use ReflectionClass;
 use ReflectionMethod;
 use Stringable;
 
 class ClassBuilder implements Stringable
 {
-    protected string $name;
+    use HasName;
+    use HasExtends;
+    use HasImplements;
+
 
     protected bool $isFinal = false;
 
@@ -16,63 +22,33 @@ class ClassBuilder implements Stringable
 
     protected bool $isReadonly = false;
 
-    protected ?string $extends = null;
-
-    protected array $implements = [];
-
     protected array $methods = [];
 
 
 
-    public function __construct(string $name)
+    public function __construct(?string $name = null)
     {
         $this->name = $name;
     }
 
-    /**
-     * Create new instance
-     */
-    public static function make(string $name): static
+    public static function make(?string $name = null): static
     {
         return new static($name);
     }
 
-    /**
-     * Create new instance from reflection
-     */
     public static function fromReflection(ReflectionClass $reflection): static
     {
-        return static::make($reflection->isAnonymous() ? 'Anonymous' : $reflection->getName())
+        $name = $reflection->isAnonymous() ? null : $reflection->getName();
+
+        return static::make($name)
             ->final($reflection->isFinal())
             ->abstract($reflection->isAbstract())
             ->methods($reflection->getMethods());
     }
 
-    /**
-     * Create new instance from object
-     */
     public static function fromObject(object $anonymous): static
     {
         return static::fromReflection(new ReflectionClass($anonymous));
-    }
-
-
-
-    /**
-     * Set name
-     */
-    public function name(string $name): static
-    {
-        $this->name = $name;
-        return $this;
-    }
-
-    /**
-     * Get name
-     */
-    public function getName(): string
-    {
-        return $this->name;
     }
 
 
@@ -124,41 +100,6 @@ class ClassBuilder implements Stringable
 
 
 
-    public function extends(?string $extends): static
-    {
-        if ($extends === '') {
-            throw new \Exception('extends must contain valid class name.');
-        }
-
-        $this->extends = $extends;
-        return $this;
-    }
-
-    public function getExtends(): ?string
-    {
-        return $this->extends;
-    }
-
-
-
-    public function implements(array $implements): static
-    {
-        // FEAT: Overload to accept not only strings =/
-        $this->implements = array_filter($implements, fn (string $implement) => (bool) $implement);
-        
-        return $this;
-    }
-
-    /**
-     * @return array<string>
-     */
-    public function getImplements(): array
-    {
-        return $this->implements;
-    }
-
-
-
     /**
      * @param array<MethodBuilder|ReflectionMethod> $methods
      */
@@ -202,6 +143,6 @@ class ClassBuilder implements Stringable
 
         $implements = $this->implements ? "implements " . implode(', ', $this->implements) : '';
 
-        return trim("{$final}{$abstract} {$readonly}") . " " . trim("class {$this->name} {$extends}") . " " . $implements . "\n{\n{$methods}\n}";
+        return trim("{$final}{$abstract} {$readonly}") . " " . trim("class {$this->getNameOrHash()} {$extends}") . " " . $implements . "\n{\n{$methods}\n}";
     }
 }
