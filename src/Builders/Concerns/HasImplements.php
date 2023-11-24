@@ -2,6 +2,9 @@
 
 namespace PHPGen\Builders\Concerns;
 
+use PHPGen\Sanitizers\NameSanitizer;
+use PHPGen\Validators\NameValidator;
+
 trait HasImplements
 {
     /**
@@ -16,8 +19,27 @@ trait HasImplements
      */
     public function implements(array $implements): static
     {
-        $this->implements = array_filter($implements, fn (string $implement) => (bool) $implement);
-        
+        $this->implements = array_map(
+            fn (string $implement) => NameValidator::valid(NameSanitizer::sanitize($implement)),
+            $implements
+        );
+
+        return $this;
+    }
+
+    /**
+     * @param string|array<int,string> $implements
+     */
+    public function addImplements(string|array $implements): static
+    {
+        if (is_string($implements)) {
+            $implements = [$implements];
+        }
+
+        array_walk($implements, function (string $implement) {
+            $this->extends[] = NameValidator::valid(NameSanitizer::sanitize($implement));
+        });
+
         return $this;
     }
 
@@ -27,5 +49,10 @@ trait HasImplements
     public function getImplements(): array
     {
         return $this->implements;
+    }
+
+    public function flushImplements(): static
+    {
+        return $this->implements([]);
     }
 }

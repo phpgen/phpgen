@@ -2,6 +2,9 @@
 
 namespace PHPGen\Builders\Concerns;
 
+use PHPGen\Sanitizers\NameSanitizer;
+use PHPGen\Validators\NameValidator;
+
 trait HasExtends
 {
     /**
@@ -13,11 +16,12 @@ trait HasExtends
 
     public function extends(?string $extends): static
     {
-        if ($extends === '') {
-            throw new \Exception('Invalid extends.');
+        if ($extends !== null) {
+            $extends = NameValidator::valid(NameSanitizer::sanitize($extends));
         }
 
         $this->extends = $extends;
+
         return $this;
     }
 

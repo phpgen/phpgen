@@ -3,22 +3,28 @@
 namespace PHPGen;
 
 use PHPGen\Builders\ClassBuilder;
+use PHPGen\Builders\InterfaceBuilder;
+use ReflectionClass;
 
 /**
  * Create PHP class builder
- * 
- * @param null|string|\ReflectionClass|object $from
  */
-function buildClass(null|string|object $from = null): ClassBuilder {
-    if ($from instanceof \ReflectionClass) {
-        return ClassBuilder::fromReflection($from);
-    }
-    elseif (is_object($from)) {
-        return ClassBuilder::fromObject($from);
-    }
-    elseif (is_string($from)) {
-        return ClassBuilder::make($from);
-    }
+function buildClass(null|string|object $from = null): ClassBuilder
+{
+    return match (true) {
+        $from instanceof ReflectionClass => ClassBuilder::fromReflection($from),
+        is_object($from)                 => ClassBuilder::fromObject($from),
+        default                          => ClassBuilder::make($from)
+    };
+}
 
-    return ClassBuilder::make();
+/**
+ * Create PHP interface builder
+ */
+function buildInterface(null|string|ReflectionClass $from = null): InterfaceBuilder
+{
+    return match (true) {
+        $from instanceof ReflectionClass => InterfaceBuilder::fromReflection($from),
+        default                          => InterfaceBuilder::make($from)
+    };
 }
