@@ -4,6 +4,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use PHPGen\Builders\FunctionBuilder;
 use PHPGen\Builders\FunctionParameterBuilder;
+use PHPGen\Builders\TypeBuilder;
 
 echo FunctionBuilder::make('sum')
     ->parameters([
@@ -12,3 +13,11 @@ echo FunctionBuilder::make('sum')
     ])
     ->return('int')
     ->body('return $a + $b;');
+
+echo "\n\n";
+
+echo TypeBuilder::make(['int', ['Stringable', 'Arrayable']]);
+
+echo "\n\n";
+
+echo TypeBuilder::make('int');
