@@ -2,24 +2,23 @@
 
 namespace PHPGen\Builders;
 
+use PHPGen\Builders\Concerns\HasBody;
 use PHPGen\Builders\Concerns\HasExtends;
 use PHPGen\Builders\Concerns\HasImplements;
 use PHPGen\Builders\Concerns\HasName;
 use ReflectionClass;
-use ReflectionMethod;
 use Stringable;
 
 class ClassBuilder implements Stringable
 {
-    use HasName;
+    use HasBody;
     use HasExtends;
     use HasImplements;
+    use HasName;
 
 
-    protected bool $isFinal = false;
-
+    protected bool $isFinal    = false;
     protected bool $isAbstract = false;
-
     protected bool $isReadonly = false;
 
     protected array $methods = [];
@@ -29,6 +28,7 @@ class ClassBuilder implements Stringable
     public function __construct(?string $name = null)
     {
         $this->name = $name;
+        $this->body = BodyBuilder::make();
     }
 
     public static function make(?string $name = null): static
@@ -43,7 +43,7 @@ class ClassBuilder implements Stringable
         return static::make($name)
             ->final($reflection->isFinal())
             ->abstract($reflection->isAbstract())
-            ->methods($reflection->getMethods());
+            ->body(BodyBuilder::fromReflection($reflection));
     }
 
     public static function fromObject(object $anonymous): static
@@ -60,6 +60,7 @@ class ClassBuilder implements Stringable
         }
 
         $this->isFinal = $final;
+
         return $this;
     }
 
@@ -77,6 +78,7 @@ class ClassBuilder implements Stringable
         }
 
         $this->isAbstract = $abstract;
+
         return $this;
     }
 
@@ -90,6 +92,7 @@ class ClassBuilder implements Stringable
     public function readonly(bool $readonly = true): static
     {
         $this->isReadonly = $readonly;
+
         return $this;
     }
 
@@ -100,49 +103,20 @@ class ClassBuilder implements Stringable
 
 
 
-    /**
-     * @param array<MethodBuilder|ReflectionMethod> $methods
-     */
-    public function methods(array $methods): static
-    {
-        // TODO: Transfer to MethodBuilder::parse()
-        $this->methods = array_map(fn (MethodBuilder|ReflectionMethod $method) => match (true) {
-            $method instanceof ReflectionMethod => MethodBuilder::fromReflection($method),
-            default => $method,
-        }, $methods);
-        
-        return $this;
-    }
-
-    /**
-     * @return array<MethodBuilder>
-     */
-    public function getMethods(): array
-    {
-        return $this->methods;
-    }
-
-
-
     public function __toString(): string
     {
-        // TODO: Same as function body, need to add new abstraction! 
-        $tab = 4;
+        // TODO: Same as function body, need to add new abstraction!
+        $tab   = 4;
         $space = str_repeat(' ', $tab);
 
-        $methods = implode("\n\n", $this->methods);
-
-        // TODO: Need to solve problem with nesting bodies of things!
-        $methods = implode("\n", array_map(fn ($line) => "{$space}{$line}", explode("\n", $methods)));
-
-        $final = $this->isFinal ? 'final' : '';
+        $final    = $this->isFinal ? 'final' : '';
         $abstract = $this->isAbstract ? 'abstract' : '';
         $readonly = $this->isReadonly ? 'readonly' : '';
 
         $extends = $this->extends ? "extends {$this->extends}" : '';
 
-        $implements = $this->implements ? "implements " . implode(', ', $this->implements) : '';
+        $implements = $this->implements ? 'implements ' . implode(', ', $this->implements) : '';
 
-        return trim("{$final}{$abstract} {$readonly}") . " " . trim("class {$this->getNameOrHash()} {$extends}") . " " . $implements . "\n{\n{$methods}\n}";
+        return trim("{$final}{$abstract} {$readonly}") . ' ' . trim("class {$this->getName()} {$extends}") . ' ' . $implements . $this->body;
     }
 }

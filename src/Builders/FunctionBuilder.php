@@ -3,6 +3,7 @@
 namespace PHPGen\Builders;
 
 use Closure;
+use PHPGen\Builders\Concerns\HasName;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
 use ReflectionParameter;
@@ -10,29 +11,25 @@ use Stringable;
 
 class FunctionBuilder implements Stringable
 {
-    protected string $name;
-    protected array $parameters = [];
-    protected ?string $return = null;
+    use HasName;
+    // TODO: use HasType alias type to returnType???;
+
+    protected array $parameters          = [];
+    protected ?string $return            = null;
     protected ?FunctionBodyBuilder $body = null;
 
 
 
-    public function __construct(string $name)
+    public function __construct(?string $name = null)
     {
         $this->name = $name;
     }
 
-    /**
-     * Create new instance
-     */
-    public static function make(string $name): static
+    public static function make(?string $name = null): static
     {
         return new static($name);
     }
 
-    /**
-     * Create new instance from reflection.
-     */
     public static function fromReflection(ReflectionFunctionAbstract $reflection): static
     {
         // TODO: Parse body
@@ -47,39 +44,16 @@ class FunctionBuilder implements Stringable
         // }
     }
 
-    /**
-     * Create new instance from Closure.
-     */
-    public static function fromClosure(string $name, Closure $closure): static
+    public static function fromClosure(Closure $closure): static
     {
         $reflection = new ReflectionFunction($closure);
 
-        return static::fromReflection($reflection)->name($name);
+        return static::fromReflection($reflection)->name(null);
     }
 
 
 
     /**
-     * Set name
-     */
-    public function name(string $name): static
-    {
-        $this->name = $name;
-        return $this;
-    }
-
-    /**
-     * Get name
-     */
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-
-    /**
-     * Set parameters
-     * 
      * @param array<FunctionParameterBuilder|ReflectionParameter> $parameters
      */
     public function parameters(array $parameters): static
@@ -87,9 +61,9 @@ class FunctionBuilder implements Stringable
         // TODO: Transfer to FunctionParameterBuilder::parse()
         $this->parameters = array_map(fn (FunctionParameterBuilder|ReflectionParameter $parameter) => match (true) {
             $parameter instanceof ReflectionParameter => FunctionParameterBuilder::fromReflection($parameter),
-            default => $parameter,
+            default                                   => $parameter,
         }, $parameters);
-        
+
         return $this;
     }
 
@@ -108,6 +82,7 @@ class FunctionBuilder implements Stringable
     public function return(?string $type): static
     {
         $this->return = $type;
+
         return $this;
     }
 
@@ -122,7 +97,7 @@ class FunctionBuilder implements Stringable
 
     /**
      * Set body
-     * 
+     *
      * @param null|string|array<string>|FunctionBodyBuilder $body
      */
     public function body(null|string|array|FunctionBodyBuilder $body): static
@@ -130,20 +105,18 @@ class FunctionBuilder implements Stringable
         if ($body === null) {
             if ($this->body === null) {
                 return $this;
-            }
-            else {
+            } else {
                 $this->body = null;
+
                 return $this;
             }
         }
 
         if ($body instanceof FunctionBodyBuilder) {
             $this->body = $body;
-        }
-        else if (is_array($body)) {
+        } elseif (is_array($body)) {
             $this->body = FunctionBodyBuilder::make($body);
-        }
-        else {
+        } else {
             $this->body = FunctionBodyBuilder::fromString($body);
         }
 
@@ -163,24 +136,14 @@ class FunctionBuilder implements Stringable
     public function __toString(): string
     {
         $parameters = implode(', ', $this->parameters);
-        $result = "function {$this->name}({$parameters})";
+        $result     = "function {$this->getName()}({$parameters})";
 
         if ($this->return) {
             $result .= ": {$this->return}";
         }
 
         $result .= "\n" . ($this->body ?? FunctionBodyBuilder::make());
-        
+
         return $result;
-    }
-
-    public function toArray(): array
-    {
-        return [];
-    }
-
-    public function toJson(): string
-    {
-        return json_encode($this->toArray());
     }
 }

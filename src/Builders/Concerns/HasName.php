@@ -23,21 +23,16 @@ trait HasName
         return $this;
     }
 
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    public function getNameHash(): string
-    {
-        // TODO: Check for better hash generator. Look how composer done it.
-        $this->nameHash ??= 'Anonymous_' . md5(bin2hex(random_bytes(8)));
-
-        return $this->nameHash;
-    }
-
-    public function getNameOrHash(): string
+    public function getName(): string
     {
         return $this->name ?? $this->getNameHash();
+    }
+
+    protected function getNameHash(): string
+    {
+        // TODO: Check for better hash generator. Look how composer done it.
+        $this->nameHash ??= 'phpgen_' . md5(bin2hex(random_bytes(8)));
+
+        return $this->nameHash;
     }
 }

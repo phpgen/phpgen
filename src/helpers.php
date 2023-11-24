@@ -2,13 +2,18 @@
 
 namespace PHPGen;
 
+use Closure;
 use PHPGen\Builders\ClassBuilder;
+use PHPGen\Builders\FunctionBuilder;
+use PHPGen\Builders\FunctionParameterBuilder;
 use PHPGen\Builders\InterfaceBuilder;
+use PHPGen\Builders\MethodBuilder;
+use PHPGen\Builders\PropertyBuilder;
 use ReflectionClass;
+use ReflectionFunctionAbstract;
+use ReflectionParameter;
+use ReflectionProperty;
 
-/**
- * Create PHP class builder
- */
 function buildClass(null|string|object $from = null): ClassBuilder
 {
     return match (true) {
@@ -18,9 +23,41 @@ function buildClass(null|string|object $from = null): ClassBuilder
     };
 }
 
-/**
- * Create PHP interface builder
- */
+function buildProperty(null|string|object $from = null): PropertyBuilder
+{
+    return match (true) {
+        $from instanceof ReflectionProperty => PropertyBuilder::fromReflection($from),
+        default                             => PropertyBuilder::make($from)
+    };
+}
+
+function buildFunction(null|string|object $from = null): FunctionBuilder
+{
+    return match (true) {
+        $from instanceof ReflectionFunctionAbstract => FunctionBuilder::fromReflection($from),
+        $from instanceof Closure                    => FunctionBuilder::fromClosure($from),
+        default                                     => PropertyBuilder::make($from)
+    };
+}
+
+function buildMethod(null|string|object $from = null): MethodBuilder
+{
+    return match (true) {
+        $from instanceof ReflectionFunctionAbstract => MethodBuilder::fromReflection($from),
+        $from instanceof FunctionBuilder            => MethodBuilder::fromFunctionBuilder($from),
+        $from instanceof Closure                    => MethodBuilder::fromClosure($from),
+        default                                     => MethodBuilder::make($from)
+    };
+}
+
+function buildParameter(null|string|object $from = null): FunctionParameterBuilder
+{
+    return match (true) {
+        $from instanceof ReflectionParameter => FunctionParameterBuilder::fromReflection($from),
+        default                              => FunctionParameterBuilder::make($from)
+    };
+}
+
 function buildInterface(null|string|ReflectionClass $from = null): InterfaceBuilder
 {
     return match (true) {

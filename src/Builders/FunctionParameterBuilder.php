@@ -2,22 +2,24 @@
 
 namespace PHPGen\Builders;
 
+use PHPGen\Builders\Concerns\HasName;
 use ReflectionParameter;
 use Stringable;
 
 class FunctionParameterBuilder implements Stringable
 {
+    use HasName;
+
     protected ?string $type = null;
-    protected string $name;
 
 
 
-    public function __construct(string $name)
+    public function __construct(?string $name = null)
     {
         $this->name = $name;
     }
-    
-    public static function make(string $name): static
+
+    public static function make(?string $name = null): static
     {
         return new static($name);
     }
@@ -35,19 +37,14 @@ class FunctionParameterBuilder implements Stringable
     public function type(?string $type): static
     {
         $this->type = $type;
+
         return $this;
     }
 
-    public function name(string $name): static
-    {
-        $this->name = $name;
-        return $this;
-    }
 
-    
 
     public function __toString(): string
     {
-        return trim("{$this->type} \${$this->name}");
+        return trim("{$this->type} \${$this->getName()}");
     }
 }

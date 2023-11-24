@@ -20,12 +20,7 @@ trait HasMultipleExtends
      */
     public function extends(array $extends): static
     {
-        $this->extends = array_map(
-            fn (string $extend) => NameValidator::valid(NameSanitizer::sanitize($extend)),
-            $extends
-        );
-
-        return $this;
+        return $this->flushExtends()->addExtends($extends);
     }
 
     /**
@@ -54,6 +49,8 @@ trait HasMultipleExtends
 
     public function flushExtends(): static
     {
-        return $this->extends([]);
+        $this->extends = [];
+
+        return $this;
     }
 }

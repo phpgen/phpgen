@@ -45,6 +45,6 @@ class InterfaceBuilder implements Stringable
 
         $extends = $this->extends ? 'extends ' . implode(', ', $this->extends) : '';
 
-        return trim("interface {$this->getNameOrHash()} {$extends}") . "\n{\n{$methods}\n}";
+        return trim("interface {$this->getName()} {$extends}") . "\n{\n{$methods}\n}";
     }
 }

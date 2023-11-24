@@ -6,7 +6,7 @@ use Stringable;
 
 class FunctionBodyBuilder implements Stringable
 {
-    protected array $lines = []; 
+    protected array $lines = [];
 
 
 
@@ -17,10 +17,10 @@ class FunctionBodyBuilder implements Stringable
     {
         $this->lines = array_filter(array_map(trim(...), $lines));
     }
-    
+
     /**
      * Create new instance
-     * 
+     *
      * @param array<string> $lines
      */
     public static function make(array $lines = []): static
@@ -40,10 +40,12 @@ class FunctionBodyBuilder implements Stringable
 
     public function __toString(): string
     {
-        $tab = 4;
+        $tab   = 4;
         $space = str_repeat(' ', $tab);
-        
-        if (count($this->lines) === 0) return "{\n\n}";
+
+        if (count($this->lines) === 0) {
+            return "{\n\n}";
+        }
 
         return "{\n" . implode("\n", array_map(fn ($line) => "{$space}{$line}", $this->lines)) . "\n}";
     }

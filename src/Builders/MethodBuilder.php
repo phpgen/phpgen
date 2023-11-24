@@ -2,12 +2,14 @@
 
 namespace PHPGen\Builders;
 
-use PHPGen\Enums\MethodVisibility;
+use PHPGen\Builders\Concerns\HasVisibility;
+use PHPGen\Contracts\BodyMember;
+use PHPGen\Enums\Visibility;
 use ReflectionFunctionAbstract;
 
-class MethodBuilder extends FunctionBuilder
+class MethodBuilder extends FunctionBuilder implements BodyMember
 {
-    protected ?MethodVisibility $visibility = null;
+    use HasVisibility;
 
 
 
@@ -17,7 +19,7 @@ class MethodBuilder extends FunctionBuilder
     public static function fromReflection(ReflectionFunctionAbstract $reflection): static
     {
         return parent::fromReflection($reflection)
-            ->visibility(MethodVisibility::tryFromReflection($reflection));
+            ->visibility(Visibility::tryFromReflection($reflection));
     }
 
     /**
@@ -33,36 +35,10 @@ class MethodBuilder extends FunctionBuilder
 
 
 
-    public function visibility(?MethodVisibility $visibility): static
-    {
-        $this->visibility = $visibility;
-        return $this;
-    }
-
-    public function public(): static
-    {
-        $this->visibility = MethodVisibility::Public;
-        return $this;
-    }
-
-    public function protected(): static
-    {
-        $this->visibility = MethodVisibility::Protected;
-        return $this;
-    }
-
-    public function private(): static
-    {
-        $this->visibility = MethodVisibility::Private;
-        return $this;
-    }
-
-    
-
     public function __toString(): string
     {
         $result = parent::__toString();
-        
+
         return trim("{$this->visibility?->value} {$result}", ' ');
     }
 }

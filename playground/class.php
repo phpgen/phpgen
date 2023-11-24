@@ -3,17 +3,22 @@
 require __DIR__ . '/../vendor/autoload.php';
 
 use PHPGen\Builders\ClassBuilder;
-use PHPGen\Builders\MethodBuilder;
 
-use function PHPGen\{ buildClass };
+use function PHPGen\buildClass;
+use function PHPGen\buildMethod;
+use function PHPGen\buildParameter;
+use function PHPGen\buildProperty;
 
-echo ClassBuilder::fromObject(new class {
-    public function hello() 
+echo ClassBuilder::fromObject(new class
+{
+    public $may = 1;
+
+    public function hello()
     {
         echo 'hello';
     }
 
-    public function great(int $s, bool $isBool): float 
+    public function great(int $s, bool $isBool): float
     {
         return $s + $isBool;
     }
@@ -21,15 +26,24 @@ echo ClassBuilder::fromObject(new class {
 
 echo "\n\n";
 
-echo ClassBuilder::make('Cat')
+echo buildClass('Cat')
     ->final()
+    ->properties([
+        buildProperty('color')->public(),
+        buildProperty('_color')->private(),
+    ])
     ->methods([
-        MethodBuilder::fromClosure('myau', function (): void {
-            echo 'myau';
-        }),
-        MethodBuilder::fromClosure('eatFood', function (float $amount): void {
-            // eat some food
-        }),
+        buildMethod()
+            ->parameters([
+                buildParameter('str')->type('string'),
+            ])
+            ->body("\$a = 'foo' . \$str;\nreturn \$a;")
+            ->return('string'),
+
+        buildMethod()->body('echo \'myau\';'),
+
+        buildMethod(function (float $amount): void {
+        })->name('eat')->body('// eat some food'),
     ]);
 
 echo "\n\n";

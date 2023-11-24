@@ -14,17 +14,13 @@ trait HasImplements
     protected array $implements = [];
 
 
+
     /**
      * @param array<int,string> $implements
      */
     public function implements(array $implements): static
     {
-        $this->implements = array_map(
-            fn (string $implement) => NameValidator::valid(NameSanitizer::sanitize($implement)),
-            $implements
-        );
-
-        return $this;
+        return $this->flushImplements()->addImplements($implements);
     }
 
     /**
@@ -37,7 +33,7 @@ trait HasImplements
         }
 
         array_walk($implements, function (string $implement) {
-            $this->extends[] = NameValidator::valid(NameSanitizer::sanitize($implement));
+            $this->implements[] = NameValidator::valid(NameSanitizer::sanitize($implement));
         });
 
         return $this;
@@ -53,6 +49,8 @@ trait HasImplements
 
     public function flushImplements(): static
     {
-        return $this->implements([]);
+        $this->implements = [];
+
+        return $this;
     }
 }
