@@ -14,6 +14,14 @@ use ReflectionFunctionAbstract;
 use ReflectionParameter;
 use ReflectionProperty;
 
+function buildInterface(null|string|ReflectionClass $from = null): InterfaceBuilder
+{
+    return match (true) {
+        $from instanceof ReflectionClass => InterfaceBuilder::fromReflection($from),
+        default                          => InterfaceBuilder::make($from)
+    };
+}
+
 function buildClass(null|string|object $from = null): ClassBuilder
 {
     return match (true) {
@@ -40,16 +48,6 @@ function buildFunction(null|string|object $from = null): FunctionBuilder
     };
 }
 
-function buildMethod(null|string|object $from = null): MethodBuilder
-{
-    return match (true) {
-        $from instanceof ReflectionFunctionAbstract => MethodBuilder::fromReflection($from),
-        $from instanceof FunctionBuilder            => MethodBuilder::fromFunctionBuilder($from),
-        $from instanceof Closure                    => MethodBuilder::fromClosure($from),
-        default                                     => MethodBuilder::make($from)
-    };
-}
-
 function buildParameter(null|string|object $from = null): FunctionParameterBuilder
 {
     return match (true) {
@@ -58,10 +56,12 @@ function buildParameter(null|string|object $from = null): FunctionParameterBuild
     };
 }
 
-function buildInterface(null|string|ReflectionClass $from = null): InterfaceBuilder
+function buildMethod(null|string|object $from = null): MethodBuilder
 {
     return match (true) {
-        $from instanceof ReflectionClass => InterfaceBuilder::fromReflection($from),
-        default                          => InterfaceBuilder::make($from)
+        $from instanceof ReflectionFunctionAbstract => MethodBuilder::fromReflection($from),
+        $from instanceof FunctionBuilder            => MethodBuilder::fromFunctionBuilder($from),
+        $from instanceof Closure                    => MethodBuilder::fromClosure($from),
+        default                                     => MethodBuilder::make($from)
     };
 }
