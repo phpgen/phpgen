@@ -50,11 +50,17 @@ class TypeBuilder implements Stringable
 
     public function __toString(): string
     {
+        if (count($this->type) === 1 && is_array($single = $this->type[0]) && count($this->type[0]) === 1) {
+            return implode('&', $this->type[0]);
+        }
+        
         $ands = array_map(function (string|array $type) {
-            return match (true) {
-                is_array($type) => '(' . implode('&', $type) . ')',
+            $and = match (true) {
+                is_array($type) => implode('&', $type),
                 default         => $type 
             };
+
+            return count($type) === 1 ? $and : "({$and})";
         }, $this->type);
 
         return implode('|', $ands);
