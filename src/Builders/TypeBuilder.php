@@ -2,67 +2,69 @@
 
 namespace PHPGen\Builders;
 
-use PHPGen\Builders\Concerns\HasName;
-use PHPGen\Builders\Concerns\HasVisibility;
-use PHPGen\Contracts\BodyMember;
-use PHPGen\Enums\Visibility;
-use ReflectionProperty;
+use PHPGen\Exceptions\ValidationException;
+use PHPGen\Parsers\TypeParser;
+use PHPGen\Sanitizers\TypeSanitizer;
+use PHPGen\Validators\TypeValidator;
+use ReflectionType;
 use Stringable;
 
 class TypeBuilder implements Stringable
 {
+    /**
+     * @var array<array<string>>
+     */
     protected array $type = [];
 
 
 
     /**
-     * @param array<int,string|array<int,string>> $type
+     * @param array<string|array<string>> $type
      */
     public function __construct(array $type = [])
     {
-        $this->type = $type;
+        $this->type = TypeValidator::valid(TypeSanitizer::sanitize($type));
     }
 
     /**
-     * @param string|array<int,string|array<int,string>> $type
+     * @param array<string|array<string>> $type
      */
-    public static function make(string|array $type = []): static
+    public static function make(array $type = []): static
     {
-        if (is_string($type)) {
-            $type = [$type];
-        }
-
         return new static($type);
     }
 
-    // public static function fromString(string $type): static
-    // {
+    public static function fromString(string $type): static
+    {
+        if ($type === '') {
+            throw new ValidationException('Type cannot be empty string.');
+        }
 
-    //     return static::make($reflection);
-    // }
+        return new static(TypeParser::parse($type));
+    }
 
-    // public static function fromReflection(ReflectionType $reflection): static
-    // {
-    //     return static::fromString($reflection);
-    // }
+    public static function fromReflection(ReflectionType $reflection): static
+    {
+        return static::fromString((string) $reflection);
+    }
 
 
 
     public function __toString(): string
     {
-        if (count($this->type) === 1 && is_array($single = $this->type[0]) && count($this->type[0]) === 1) {
-            return implode('&', $this->type[0]);
-        }
-        
-        $ands = array_map(function (string|array $type) {
-            $and = match (true) {
-                is_array($type) => implode('&', $type),
-                default         => $type 
-            };
+        $isSingle = count($this->type) === 1;
 
-            return count($type) === 1 ? $and : "({$and})";
-        }, $this->type);
+        return implode(
+            '|',
+            array_map(function (string|array $type) use ($isSingle): string {
+                if (is_string($type)) {
+                    $type = [$type];
+                }
 
-        return implode('|', $ands);
+                return count($type) === 1 || $isSingle
+                    ? implode('&', $type)
+                    : '(' . implode('&', $type) . ')';
+            }, $this->type)
+        );
     }
 }

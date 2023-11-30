@@ -14,26 +14,26 @@ class NameValidator
     /**
      * @throws ValidationException
      */
-    public static function validate(string $name): void
+    public static function validate(string &$value): void
     {
-        if ($name === '') {
+        if ($value === '') {
             throw new ValidationException('Name cannot be empty string.');
         }
 
-        if (preg_match('/^[a-zA-Z]/', $name) !== 1) {
-            throw new ValidationException('Name only can start with alpha character.');
+        if (preg_match('/^[_a-zA-Z][_a-zA-Z0-9]*$/', $value) !== 1) {
+            throw new ValidationException('Invalid name.');
         }
 
-        self::validateReservedWords($name);
+        self::validateReservedWords($value);
     }
 
     /**
      * @throws ValidationException
      */
-    public static function valid(string $name): string
+    public static function &valid(string &$value): string
     {
-        static::validate($name);
+        static::validate($value);
 
-        return $name;
+        return $value;
     }
 }

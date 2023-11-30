@@ -2,10 +2,8 @@
 
 namespace PHPGen\Validators;
 
-use ArrayAccess;
 use PHPGen\Exceptions\ValidationException;
 use PHPGen\Validators\Concerns\CanValidateReservedWords;
-use Stringable;
 
 class TypeValidator
 {
@@ -14,29 +12,40 @@ class TypeValidator
 
 
     /**
+     * Validate
+     *
+     * @param array $value Expects array<array<string>>
+     *
      * @throws ValidationException
      */
-    public static function validate(string $name): void
+    public static function validate(array &$value): void
     {
-        if ($name === '') {
-            throw new ValidationException('Type cannot be empty string.');
+        try {
+            foreach ($value as $types) {
+                foreach ($types as $type) {
+                    if (preg_match('/[()|&]/', $type) === 1) {
+                        throw new ValidationException('Invalid character in type definition.');
+                    }
+                }
+            }
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Throwable) {
+            throw new ValidationException('Invalid type definition.');
         }
-
-        self::validateReservedWords($name);
     }
 
-    // public function test((Stringable&ArrayAccess)|int $a)
-    // {
-
-    // }
-
     /**
+     * Validate and return original value
+     *
+     * @return array<array<string>>
+     *
      * @throws ValidationException
      */
-    public static function valid(string $name): string
+    public static function &valid(array &$value): array
     {
-        static::validate($name);
+        static::validate($value);
 
-        return $name;
+        return $value;
     }
 }

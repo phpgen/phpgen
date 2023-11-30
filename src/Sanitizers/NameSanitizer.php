@@ -4,8 +4,8 @@ namespace PHPGen\Sanitizers;
 
 class NameSanitizer
 {
-    public static function sanitize(string $name): string
+    public static function sanitize(string $value): string
     {
-        return preg_replace('/[^a-zA-Z0-9]+/', '', trim($name, " \n\r\t\v\0\\/"));
+        return rtrim(trim($value), '\\/');
     }
 }

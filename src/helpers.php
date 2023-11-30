@@ -9,10 +9,12 @@ use PHPGen\Builders\FunctionParameterBuilder;
 use PHPGen\Builders\InterfaceBuilder;
 use PHPGen\Builders\MethodBuilder;
 use PHPGen\Builders\PropertyBuilder;
+use PHPGen\Builders\TypeBuilder;
 use ReflectionClass;
 use ReflectionFunctionAbstract;
 use ReflectionParameter;
 use ReflectionProperty;
+use ReflectionType;
 
 function buildInterface(null|string|ReflectionClass $from = null): InterfaceBuilder
 {
@@ -53,6 +55,17 @@ function buildParameter(null|string|object $from = null): FunctionParameterBuild
     return match (true) {
         $from instanceof ReflectionParameter => FunctionParameterBuilder::fromReflection($from),
         default                              => FunctionParameterBuilder::make($from)
+    };
+}
+
+function buildType(null|string|array|object $from = null): TypeBuilder
+{
+    $from ??= [];
+
+    return match (true) {
+        $from instanceof ReflectionType => TypeBuilder::fromReflection($from),
+        is_string($from)                => TypeBuilder::fromString($from),
+        default                         => TypeBuilder::make($from),
     };
 }
 
