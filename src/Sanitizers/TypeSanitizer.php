@@ -13,19 +13,19 @@ class TypeSanitizer
     {
         // TODO: verify. can ruin tests
 
-        foreach ($value as $conjunctionTypesKey => &$conjunctionTypes) {
-            if (is_string($conjunctionTypes)) {
-                $conjunctionTypes = [$conjunctionTypes];
+        foreach ($value as $orKey => &$andList) {
+            if (is_string($andList)) {
+                $andList = [$andList];
             }
 
-            foreach ($conjunctionTypes as $conjunctionTypeKey => $conjunctionType) {
-                if (trim($conjunctionType) === '') {
-                    unset($value[$conjunctionTypesKey][$conjunctionTypeKey]);
+            foreach ($andList as $andKey => $and) {
+                if (trim($and) === '') {
+                    unset($value[$orKey][$andKey]);
                 }
             }
 
-            if (count($value[$conjunctionTypesKey]) === 0) {
-                unset($value[$conjunctionTypesKey]);
+            if (count($value[$orKey]) === 0) {
+                unset($value[$orKey]);
             }
         }
 

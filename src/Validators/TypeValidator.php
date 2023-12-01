@@ -21,9 +21,9 @@ class TypeValidator
     public static function validate(array &$value): void
     {
         try {
-            foreach ($value as $conjunctionTypes) {
-                foreach ($conjunctionTypes as $conjunctionType) {
-                    if (preg_match('/[()|&]/', $conjunctionType) === 1) {
+            foreach ($value as $andList) {
+                foreach ($andList as $and) {
+                    if (preg_match('/[()|&]/', $and) === 1) {
                         throw new ValidationException('Invalid character in type definition.');
                     }
                 }
