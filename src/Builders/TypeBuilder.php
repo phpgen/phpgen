@@ -53,16 +53,16 @@ class TypeBuilder implements Stringable
     public function __toString(): string
     {
         // TODO: verify. can ruin tests
-        $isSingle = count($this->type) === 1;
+        $isSingleDisjunctionable = count($this->type) === 1;
 
-        $conjunctions = array_map(function (array $types) use ($isSingle): string {
-            $imploded = implode('&', $types);
+        $conjunctions = array_map(function (array $conjunctionables) use ($isSingleDisjunctionable): string {
+            $conjunction = implode('&', $conjunctionables);
 
-            if (count($types) === 1 || $isSingle) {
-                $imploded = "({$imploded})";
+            if (count($conjunctionables) === 1 || $isSingleDisjunctionable) {
+                $conjunction = "({$conjunction})";
             }
 
-            return $imploded;
+            return $conjunction;
         }, $this->type);
 
         return implode('|', $conjunctions);
