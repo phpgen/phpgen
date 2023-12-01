@@ -11,19 +11,21 @@ class TypeSanitizer
      */
     public static function &sanitize(array &$value): array
     {
-        foreach ($value as $typesKey => $types) {
-            if (is_string($value[$typesKey])) {
-                $value[$typesKey] = [$types];
+        // TODO: verify. can ruin tests
+
+        foreach ($value as $conjunctionTypesKey => &$conjunctionTypes) {
+            if (is_string($conjunctionTypes)) {
+                $conjunctionTypes = [$conjunctionTypes];
             }
 
-            foreach ($value[$typesKey] as $typeKey => $type) {
-                if (trim($type) === '') {
-                    unset($value[$typesKey][$typeKey]);
+            foreach ($conjunctionTypes as $conjunctionTypeKey => $conjunctionType) {
+                if (trim($conjunctionType) === '') {
+                    unset($value[$conjunctionTypesKey][$conjunctionTypeKey]);
                 }
             }
 
-            if (count($value[$typesKey]) === 0) {
-                unset($value[$typesKey]);
+            if (count($value[$conjunctionTypesKey]) === 0) {
+                unset($value[$conjunctionTypesKey]);
             }
         }
 

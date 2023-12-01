@@ -14,16 +14,16 @@ class TypeValidator
     /**
      * Validate
      *
-     * @param array $value Expects array<array<string>>
+     * @param array<array<string>> $value
      *
      * @throws ValidationException
      */
     public static function validate(array &$value): void
     {
         try {
-            foreach ($value as $types) {
-                foreach ($types as $type) {
-                    if (preg_match('/[()|&]/', $type) === 1) {
+            foreach ($value as $conjunctionTypes) {
+                foreach ($conjunctionTypes as $conjunctionType) {
+                    if (preg_match('/[()|&]/', $conjunctionType) === 1) {
                         throw new ValidationException('Invalid character in type definition.');
                     }
                 }
