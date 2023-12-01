@@ -52,19 +52,19 @@ class TypeBuilder implements Stringable
 
     public function __toString(): string
     {
+        // TODO: verify. can ruin tests
         $isSingle = count($this->type) === 1;
 
-        return implode(
-            '|',
-            array_map(function (string|array $type) use ($isSingle): string {
-                if (is_string($type)) {
-                    $type = [$type];
-                }
+        $conjunctions = array_map(function (array $types) use ($isSingle): string {
+            $imploded = implode('&', $types);
 
-                return count($type) === 1 || $isSingle
-                    ? implode('&', $type)
-                    : '(' . implode('&', $type) . ')';
-            }, $this->type)
-        );
+            if (count($types) === 1 || $isSingle) {
+                $imploded = "({$imploded})";
+            }
+
+            return $imploded;
+        }, $this->type);
+
+        return implode('|', $conjunctions);
     }
 }
