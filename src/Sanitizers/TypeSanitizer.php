@@ -11,23 +11,21 @@ class TypeSanitizer
      */
     public static function &sanitize(array &$value): array
     {
-        array_walk($value, function (string|array &$types, $key) use (&$value): void {
-            if (is_string($types)) {
-                $types = [$types];
-            } elseif (count($types) === 0) {
-                unset($value[$key]);
+        foreach ($value as $typesKey => $types) {
+            if (is_string($value[$typesKey])) {
+                $value[$typesKey] = [$types];
             }
-            // TODO: Filter '' and other shit
-        });
 
-        // foreach ($value as $key => $types) {
-        //     if (is_string($types)) {
+            foreach ($value[$typesKey] as $typeKey => $type) {
+                if (trim($type) === '') {
+                    unset($value[$typesKey][$typeKey]);
+                }
+            }
 
-        //     }
-        //     elseif (is_array()) {
-
-        //     }
-        // }
+            if (count($value[$typesKey]) === 0) {
+                unset($value[$typesKey]);
+            }
+        }
 
         return $value;
     }

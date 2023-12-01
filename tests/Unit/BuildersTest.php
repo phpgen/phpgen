@@ -75,7 +75,7 @@ describe('TypeBuilder', function () {
         expect((string) buildType([['A', 'B'], 'C']))->toBe('(A&B)|C');
 
         expect((string) buildType([['A', 'B'], []]))->toBe('A&B');
-
-        expect((string) buildType([['A', 'B'], [null]]))->toBe('A&B');
+        expect((string) buildType([['A', 'B'], ['']]))->toBe('A&B');
+        expect((string) buildType([['A', 'B'], '', [], '  ', ['', '  ']]))->toBe('A&B');
     });
 })->group('builders');
