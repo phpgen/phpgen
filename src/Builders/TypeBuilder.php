@@ -58,7 +58,7 @@ class TypeBuilder implements Stringable
         $orList = array_map(function (array $andList) use ($isSingleOr): string {
             $or = implode('&', $andList);
 
-            if (count($andList) === 1 || $isSingleOr) {
+            if (count($andList) !== 1 && !$isSingleOr) {
                 $or = "({$or})";
             }
 
