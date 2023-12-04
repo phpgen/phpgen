@@ -2,6 +2,9 @@
 
 namespace PHPGen\Builders;
 
+use PhpToken;
+use ReflectionFunctionAbstract;
+use SplFileObject;
 use Stringable;
 
 class FunctionBodyBuilder implements Stringable
@@ -28,12 +31,80 @@ class FunctionBodyBuilder implements Stringable
         return new static($lines);
     }
 
-    /**
-     * Create new instance from string
-     */
     public static function fromString(string $body): static
     {
-        return new static(explode("\n", $body));
+        return static::make(explode("\n", $body));
+    }
+
+    public static function fromReflection(ReflectionFunctionAbstract $reflection): static
+    {
+        $filename = $reflection->getFileName();
+
+        $start = max($reflection->getStartLine() - 1, 0);
+        $end   = $reflection->getEndLine();
+        $lines = $end - $start;
+
+        $file = new SplFileObject($filename);
+        $file->seek($start - 1);
+
+        $body = '<?php ';
+
+        do {
+            $body .= $file->fgets();
+        } while ($lines-- > 0);
+
+
+        $tokens = PhpToken::tokenize($body, TOKEN_PARSE);
+
+        $result         = [];
+        $isInsideString = false;
+        $write          = false;
+        $activeLine     = null;
+        $line           = '';
+
+        foreach ($tokens as $token) {
+            if (!$token->isIgnorable()) {
+                // echo $token->getTokenName(), PHP_EOL;
+            }
+
+            if ($token->is('"')) {
+                $isInsideString = !$isInsideString;
+            }
+
+            if (!$isInsideString) {
+                if ($token->is('{')) {
+                    $write = true;
+
+                    continue;
+                } elseif ($token->is('}')) {
+                    $write = false;
+                }
+            }
+
+            if ($activeLine !== null && $activeLine !== $token->line) {
+                $result[]   = trim($line);
+                $line       = '';
+                $activeLine = $token->line;
+            }
+
+            if ($write) {
+                $activeLine = $token->line;
+                $line .= $token->text;
+            }
+        }
+
+        var_dump($result);
+
+        return static::make([]);
+
+        // $handle = fopen($file, 'r');
+        // if ($handle) {
+        //     while (($line = fgets($handle)) !== false) {
+
+        //     }
+
+        //     fclose($handle);
+        // }
     }
 
 
