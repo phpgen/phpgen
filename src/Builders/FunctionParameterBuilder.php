@@ -28,10 +28,8 @@ class FunctionParameterBuilder implements Stringable
 
     public static function fromReflection(ReflectionParameter $reflection): static
     {
-        // `$reflection->getType()?->getName()` is undocumented, but exists!
-
         return static::make($reflection->getName())
-            ->type($reflection->getType()?->getName())
+            ->type($reflection->getType())
             ->byReference($reflection->isPassedByReference());
     }
 

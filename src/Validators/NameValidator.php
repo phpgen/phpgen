@@ -14,7 +14,7 @@ class NameValidator
     /**
      * @throws ValidationException
      */
-    public static function validate(string &$value): void
+    public static function validate(string $value): void
     {
         if ($value === '') {
             throw new ValidationException('Name cannot be empty string.');
@@ -30,7 +30,7 @@ class NameValidator
     /**
      * @throws ValidationException
      */
-    public static function &valid(string &$value): string
+    public static function valid(string $value): string
     {
         static::validate($value);
 
