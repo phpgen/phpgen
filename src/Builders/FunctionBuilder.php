@@ -4,18 +4,29 @@ namespace PHPGen\Builders;
 
 use Closure;
 use PHPGen\Builders\Concerns\HasName;
+use PHPGen\Builders\Concerns\HasReference;
+use PHPGen\Builders\Concerns\HasType;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
-use ReflectionParameter;
 use Stringable;
+
+use function PHPGen\buildParameter;
 
 class FunctionBuilder implements Stringable
 {
     use HasName;
-    // TODO: use HasType alias type to returnType???;
+    use HasReference {
+        byReference as private _byReference;
+        byRef as private _byRef;
+        isReference as private _isReference;
+        isRef as private _isRef;
+    }
+    use HasType {
+        type as private _type;
+        getType as private _getType;
+    }
 
     protected array $parameters          = [];
-    protected ?string $return            = null;
     protected ?FunctionBodyBuilder $body = null;
 
 
@@ -35,73 +46,112 @@ class FunctionBuilder implements Stringable
         // TODO: Parse body
         return static::make($reflection->getName())
             ->parameters($reflection->getParameters())
-            ->return($reflection->getReturnType());
-
-        // $body = '';
-        // $lines = file($reflection->getFileName());
-        // for($l = $reflection->getStartLine() - 1; $l < $reflection->getEndLine(); $l++) {
-        //     $body .= $lines[$l];
-        // }
+            ->return($reflection->getReturnType())
+            ->returnsByReference($reflection->returnsReference());
     }
 
     public static function fromClosure(Closure $closure): static
     {
-        $reflection = new ReflectionFunction($closure);
-
-        return static::fromReflection($reflection)->name(null);
+        return static::fromReflection(new ReflectionFunction($closure))->name(null);
     }
 
 
 
     /**
-     * @param array<FunctionParameterBuilder|ReflectionParameter> $parameters
+     * @param array<string|object> $parameters
      */
     public function parameters(array $parameters): static
     {
-        // TODO: Transfer to FunctionParameterBuilder::parse()
-        $this->parameters = array_map(fn (FunctionParameterBuilder|ReflectionParameter $parameter) => match (true) {
-            $parameter instanceof ReflectionParameter => FunctionParameterBuilder::fromReflection($parameter),
-            default                                   => $parameter,
-        }, $parameters);
+        return $this->flushParameters()->addParameters($parameters);
+    }
+
+    /**
+     * @param array<string|object> $parameters
+     */
+    public function addParameters(array $parameters): static
+    {
+        array_walk($parameters, function (string|object $parameter) {
+            $this->parameters[] = $parameter instanceof FunctionParameterBuilder
+                ? $parameter
+                : buildParameter($parameter);
+        });
+
+        return $this;
+    }
+
+    public function addParameter(string|object $parameter): static
+    {
+        $this->parameters[] = $parameter instanceof FunctionParameterBuilder
+            ? $parameter
+            : buildParameter($parameter);
 
         return $this;
     }
 
     /**
-     * Get parameters
+     * @return array<int,FunctionParameterBuilder>
      */
     public function getParameters(): array
     {
         return $this->parameters;
     }
 
-
-    /**
-     * Set return type
-     */
-    public function return(?string $type): static
+    public function flushParameters(): static
     {
-        $this->return = $type;
+        $this->parameters = [];
 
         return $this;
     }
 
-    /**
-     * Get return type
-     */
-    public function getReturn(): ?string
+
+
+    public function return(null|string|array|object $from = null): static
     {
-        return $this->return;
+        return $this->_type($from);
+    }
+
+    public function getReturnType(): TypeBuilder
+    {
+        return $this->_getType();
     }
 
 
+
+    public function returnsByReference(bool $byReference = true): static
+    {
+        return $this->_byReference($byReference);
+    }
+
+    public function returnsByRef(bool $byRef = true): static
+    {
+        return $this->_byRef($byRef);
+    }
+
+    public function returnsReference(): bool
+    {
+        return $this->_isReference();
+    }
+
+    public function returnsRef(): bool
+    {
+        return $this->_isRef();
+    }
+
+
+
+    public function returnReferenced(null|string|array|object $from = null): static
+    {
+        return $this->returnsByReference(true)->return($from);
+    }
+
+
+
     /**
-     * Set body
-     *
      * @param null|string|array<string>|FunctionBodyBuilder $body
      */
     public function body(null|string|array|FunctionBodyBuilder $body): static
     {
+        // TODO: to parser
         if ($body === null) {
             if ($this->body === null) {
                 return $this;
@@ -123,12 +173,9 @@ class FunctionBuilder implements Stringable
         return $this;
     }
 
-    /**
-     * Get body
-     */
-    public function getBody(): ?FunctionBodyBuilder
+    public function getBody(): FunctionBodyBuilder
     {
-        return $this->body;
+        return $this->body ??= FunctionBodyBuilder::make();
     }
 
 
@@ -136,13 +183,14 @@ class FunctionBuilder implements Stringable
     public function __toString(): string
     {
         $parameters = implode(', ', $this->parameters);
-        $result     = "function {$this->getName()}({$parameters})";
+        $reference  = $this->returnsReference() ? '&' : '';
+        $result     = "function {$reference}{$this->getName()}({$parameters})";
 
-        if ($this->return) {
-            $result .= ": {$this->return}";
+        if ($this->getReturnType()->isNotEmpty()) {
+            $result .= ": {$this->getReturnType()}";
         }
 
-        $result .= "\n" . ($this->body ?? FunctionBodyBuilder::make());
+        $result .= "\n" . $this->getBody();
 
         return $result;
     }

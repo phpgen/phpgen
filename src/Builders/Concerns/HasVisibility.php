@@ -37,4 +37,9 @@ trait HasVisibility
 
         return $this;
     }
+
+    public function getVisibility(): ?Visibility
+    {
+        return $this->visibility;
+    }
 }

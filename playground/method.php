@@ -2,14 +2,14 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use PHPGen\Builders\FunctionParameterBuilder;
-use PHPGen\Builders\MethodBuilder;
+use function PHPGen\buildMethod;
+use function PHPGen\buildParameter;
 
-echo MethodBuilder::make('sum')
+echo buildMethod('increment')
     ->private()
     ->parameters([
-        FunctionParameterBuilder::make('a')->type('int'),
-        FunctionParameterBuilder::make('b')->type('int'),
+        buildParameter('target')->type(['int', 'float'])->byRef(),
+        buildParameter('amount')->type(['int', 'float']),
     ])
-    ->return('int')
-    ->body('return $a + $b;');
+    ->returnReferenced(['int', 'float'])
+    ->body('return $target = $target + $amount;');

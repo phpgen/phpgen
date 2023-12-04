@@ -29,7 +29,7 @@ class MethodBuilder extends FunctionBuilder implements BodyMember
     {
         return static::make($function->getName())
             ->parameters($function->getParameters())
-            ->return($function->getReturn())
+            ->return($function->getReturnType())
             ->body($function->getBody());
     }
 
@@ -39,6 +39,6 @@ class MethodBuilder extends FunctionBuilder implements BodyMember
     {
         $result = parent::__toString();
 
-        return trim("{$this->visibility?->value} {$result}", ' ');
+        return trim("{$this->getVisibility()?->value} {$result}", ' ');
     }
 }

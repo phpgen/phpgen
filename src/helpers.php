@@ -46,7 +46,7 @@ function buildFunction(null|string|object $from = null): FunctionBuilder
     return match (true) {
         $from instanceof ReflectionFunctionAbstract => FunctionBuilder::fromReflection($from),
         $from instanceof Closure                    => FunctionBuilder::fromClosure($from),
-        default                                     => PropertyBuilder::make($from)
+        default                                     => FunctionBuilder::make($from)
     };
 }
 

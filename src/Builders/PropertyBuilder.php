@@ -3,6 +3,7 @@
 namespace PHPGen\Builders;
 
 use PHPGen\Builders\Concerns\HasName;
+use PHPGen\Builders\Concerns\HasType;
 use PHPGen\Builders\Concerns\HasVisibility;
 use PHPGen\Contracts\BodyMember;
 use PHPGen\Enums\Visibility;
@@ -12,8 +13,8 @@ use Stringable;
 class PropertyBuilder implements BodyMember, Stringable
 {
     use HasName;
+    use HasType;
     use HasVisibility;
-    // TODO: use HasType;
 
 
 
@@ -37,6 +38,8 @@ class PropertyBuilder implements BodyMember, Stringable
 
     public function __toString(): string
     {
-        return trim("{$this->visibility?->value} \${$this->getName()};");
+        $result = trim("{$this->getType()} \${$this->getName()};");
+
+        return trim("{$this->getVisibility()?->value} {$result}");
     }
 }

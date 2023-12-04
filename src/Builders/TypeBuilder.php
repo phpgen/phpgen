@@ -50,6 +50,18 @@ class TypeBuilder implements Stringable
 
 
 
+    public function isEmpty(): bool
+    {
+        return $this->type === [];
+    }
+
+    public function isNotEmpty(): bool
+    {
+        return !$this->isEmpty();
+    }
+
+
+
     public function __toString(): string
     {
         $isSingleOr = count($this->type) === 1;

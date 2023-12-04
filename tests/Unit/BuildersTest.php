@@ -2,6 +2,7 @@
 
 use PHPGen\Exceptions\ValidationException;
 
+use function PHPGen\buildFunction;
 use function PHPGen\buildType;
 
 describe('TypeBuilder', function () {
@@ -77,5 +78,12 @@ describe('TypeBuilder', function () {
         expect((string) buildType([['A', 'B'], []]))->toBe('A&B');
         expect((string) buildType([['A', 'B'], ['']]))->toBe('A&B');
         expect((string) buildType([['A', 'B'], '', [], '  ', ['', '  ']]))->toBe('A&B');
+    });
+})->group('builders');
+
+
+describe('FunctionBuilder', function () {
+    test('???', function () {
+        var_dump(buildFunction()->type());
     });
 })->group('builders');

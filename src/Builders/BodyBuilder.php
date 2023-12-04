@@ -24,6 +24,8 @@ class BodyBuilder implements Stringable
 
     public static function fromReflection(ReflectionClass $reflection): static
     {
+        // TODO: Constants
+        // TODO: Traits
         $name = $reflection->isAnonymous() ? null : $reflection->getName();
 
         return static::make($name)

@@ -28,7 +28,6 @@ class ClassBuilder implements Stringable
     public function __construct(?string $name = null)
     {
         $this->name = $name;
-        $this->body = BodyBuilder::make();
     }
 
     public static function make(?string $name = null): static

@@ -6,7 +6,7 @@ use PHPGen\Builders\BodyBuilder;
 
 trait HasBody
 {
-    protected BodyBuilder $body;
+    protected ?BodyBuilder $body = null;
 
 
 
@@ -19,7 +19,7 @@ trait HasBody
 
     public function getBody(): BodyBuilder
     {
-        return $this->body;
+        return $this->body ??= BodyBuilder::make();
     }
 
 
@@ -29,7 +29,7 @@ trait HasBody
      */
     public function methods(array $methods): static
     {
-        $this->body->methods($methods);
+        $this->getBody()->methods($methods);
 
         return $this;
     }
@@ -39,7 +39,7 @@ trait HasBody
      */
     public function addMethods(string|array $methods): static
     {
-        $this->body->addMethods($methods);
+        $this->getBody()->addMethods($methods);
 
         return $this;
     }
@@ -49,14 +49,14 @@ trait HasBody
      */
     public function getMethods(?callable $callback = null): array
     {
-        $this->body->getMethods($callback);
+        $this->getBody()->getMethods($callback);
 
         return $this;
     }
 
     public function flushMethods(): static
     {
-        $this->body->flushMethods();
+        $this->getBody()->flushMethods();
 
         return $this;
     }
@@ -68,7 +68,7 @@ trait HasBody
      */
     public function properties(array $properties): static
     {
-        $this->body->properties($properties);
+        $this->getBody()->properties($properties);
 
         return $this;
     }
@@ -78,7 +78,7 @@ trait HasBody
      */
     public function addProperties(string|array $properties): static
     {
-        $this->body->addProperties($properties);
+        $this->getBody()->addProperties($properties);
 
         return $this;
     }
@@ -88,14 +88,14 @@ trait HasBody
      */
     public function getProperties(?callable $callback = null): array
     {
-        $this->body->getProperties($callback);
+        $this->getBody()->getProperties($callback);
 
         return $this;
     }
 
     public function flushProperties(): static
     {
-        $this->body->flushProperties();
+        $this->getBody()->flushProperties();
 
         return $this;
     }

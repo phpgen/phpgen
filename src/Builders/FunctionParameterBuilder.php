@@ -3,14 +3,16 @@
 namespace PHPGen\Builders;
 
 use PHPGen\Builders\Concerns\HasName;
+use PHPGen\Builders\Concerns\HasReference;
+use PHPGen\Builders\Concerns\HasType;
 use ReflectionParameter;
 use Stringable;
 
 class FunctionParameterBuilder implements Stringable
 {
     use HasName;
-
-    protected ?string $type = null;
+    use HasReference;
+    use HasType;
 
 
 
@@ -29,22 +31,16 @@ class FunctionParameterBuilder implements Stringable
         // `$reflection->getType()?->getName()` is undocumented, but exists!
 
         return static::make($reflection->getName())
-            ->type($reflection->getType()?->getName());
-    }
-
-
-
-    public function type(?string $type): static
-    {
-        $this->type = $type;
-
-        return $this;
+            ->type($reflection->getType()?->getName())
+            ->byReference($reflection->isPassedByReference());
     }
 
 
 
     public function __toString(): string
     {
-        return trim("{$this->type} \${$this->getName()}");
+        $reference = $this->isReference() ? '&' : '';
+
+        return trim("{$this->getType()} {$reference}\${$this->getName()}");
     }
 }
