@@ -52,7 +52,6 @@ class TypeBuilder implements Stringable
 
     public function __toString(): string
     {
-        // TODO: verify. can ruin tests
         $isSingleOr = count($this->type) === 1;
 
         $orList = array_map(function (array $andList) use ($isSingleOr): string {

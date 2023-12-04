@@ -11,8 +11,6 @@ class TypeSanitizer
      */
     public static function &sanitize(array &$value): array
     {
-        // TODO: verify. can ruin tests
-
         foreach ($value as $orKey => &$andList) {
             if (is_string($andList)) {
                 $andList = [$andList];
