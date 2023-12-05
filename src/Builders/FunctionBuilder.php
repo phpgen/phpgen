@@ -6,10 +6,12 @@ use Closure;
 use PHPGen\Builders\Concerns\HasName;
 use PHPGen\Builders\Concerns\HasReference;
 use PHPGen\Builders\Concerns\HasType;
+use PHPGen\Builders\FunctionBodyBuilder as Body;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
 use Stringable;
 
+use function PHPGen\buildFunctionBody;
 use function PHPGen\buildParameter;
 
 class FunctionBuilder implements Stringable
@@ -26,8 +28,8 @@ class FunctionBuilder implements Stringable
         getType as private _getType;
     }
 
-    protected array $parameters          = [];
-    protected ?FunctionBodyBuilder $body = null;
+    protected array $parameters = [];
+    protected ?Body $body       = null;
 
 
 
@@ -43,11 +45,11 @@ class FunctionBuilder implements Stringable
 
     public static function fromReflection(ReflectionFunctionAbstract $reflection): static
     {
-        // TODO: Parse body
         return static::make($reflection->getName())
             ->parameters($reflection->getParameters())
             ->return($reflection->getReturnType())
-            ->returnsByReference($reflection->returnsReference());
+            ->returnsByReference($reflection->returnsReference())
+            ->body(Body::fromReflection($reflection));
     }
 
     public static function fromClosure(Closure $closure): static
@@ -146,36 +148,16 @@ class FunctionBuilder implements Stringable
 
 
 
-    /**
-     * @param null|string|array<string>|FunctionBodyBuilder $body
-     */
-    public function body(null|string|array|FunctionBodyBuilder $body): static
+    public function body(null|string|Body $body): static
     {
-        // TODO: to parser
-        if ($body === null) {
-            if ($this->body === null) {
-                return $this;
-            } else {
-                $this->body = null;
-
-                return $this;
-            }
-        }
-
-        if ($body instanceof FunctionBodyBuilder) {
-            $this->body = $body;
-        } elseif (is_array($body)) {
-            $this->body = FunctionBodyBuilder::make($body);
-        } else {
-            $this->body = FunctionBodyBuilder::fromString($body);
-        }
+        $this->body = $body instanceof Body ? $body : buildFunctionBody($body);
 
         return $this;
     }
 
-    public function getBody(): FunctionBodyBuilder
+    public function getBody(): Body
     {
-        return $this->body ??= FunctionBodyBuilder::make();
+        return $this->body ??= Body::make();
     }
 
 

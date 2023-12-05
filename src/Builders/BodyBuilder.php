@@ -29,8 +29,8 @@ class BodyBuilder implements Stringable
         $name = $reflection->isAnonymous() ? null : $reflection->getName();
 
         return static::make($name)
-            ->methods($reflection->getMethods())
-            ->properties($reflection->getProperties());
+            ->properties($reflection->getProperties())
+            ->methods($reflection->getMethods());
     }
 
 
@@ -140,6 +140,7 @@ class BodyBuilder implements Stringable
     public function __toString(): string
     {
         // TODO: Need printer
+        // dd($this->members);
         $indentation   = '    ';
         $membersString = implode("\n\n", $this->members);
         $rows          = explode("\n", $membersString);

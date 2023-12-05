@@ -28,8 +28,17 @@
             "default": "align_single_space_minimal"
         },
 
+        "blank_line_before_statement": {
+            "statements": [
+                "declare",
+                "return",
+                "throw",
+                "try"
+            ]
+        },
+
         "no_extra_blank_lines": {
-            "tokens": ["use", "throw"]
+            "tokens": ["use", "throw", "continue", "break"]
         },
 
         "method_argument_space": {
@@ -43,6 +52,10 @@
 
         "nullable_type_declaration_for_default_null_value": {
             "use_nullable_type_declaration": true
+        },
+
+        "control_structure_continuation_position": {
+            "position": "next_line"
         }
     }
 }

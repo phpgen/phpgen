@@ -2,122 +2,40 @@
 
 namespace PHPGen\Builders;
 
-use PhpToken;
+use PHPGen\Parsers\FunctionBodyParser;
 use ReflectionFunctionAbstract;
-use SplFileObject;
 use Stringable;
 
 class FunctionBodyBuilder implements Stringable
 {
-    protected array $lines = [];
+    protected ?string $body = null;
 
 
 
-    /**
-     * @param array<string> $lines
-     */
-    public function __construct(array $lines = [])
+    public function __construct(?string $body = null)
     {
-        $this->lines = array_filter(array_map(trim(...), $lines));
+        $this->body = $body;
     }
 
-    /**
-     * Create new instance
-     *
-     * @param array<string> $lines
-     */
-    public static function make(array $lines = []): static
+    public static function make(?string $body = null): static
     {
-        return new static($lines);
-    }
-
-    public static function fromString(string $body): static
-    {
-        return static::make(explode("\n", $body));
+        return new static($body);
     }
 
     public static function fromReflection(ReflectionFunctionAbstract $reflection): static
     {
-        $filename = $reflection->getFileName();
+        $body = FunctionBodyParser::parse($reflection);
 
-        $start = max($reflection->getStartLine() - 1, 0);
-        $end   = $reflection->getEndLine();
-        $lines = $end - $start;
-
-        $file = new SplFileObject($filename);
-        $file->seek($start - 1);
-
-        $body = '<?php ';
-
-        do {
-            $body .= $file->fgets();
-        } while ($lines-- > 0);
-
-
-        $tokens = PhpToken::tokenize($body, TOKEN_PARSE);
-
-        $result         = [];
-        $isInsideString = false;
-        $write          = false;
-        $activeLine     = null;
-        $line           = '';
-
-        foreach ($tokens as $token) {
-            if (!$token->isIgnorable()) {
-                // echo $token->getTokenName(), PHP_EOL;
-            }
-
-            if ($token->is('"')) {
-                $isInsideString = !$isInsideString;
-            }
-
-            if (!$isInsideString) {
-                if ($token->is('{')) {
-                    $write = true;
-
-                    continue;
-                } elseif ($token->is('}')) {
-                    $write = false;
-                }
-            }
-
-            if ($activeLine !== null && $activeLine !== $token->line) {
-                $result[]   = trim($line);
-                $line       = '';
-                $activeLine = $token->line;
-            }
-
-            if ($write) {
-                $activeLine = $token->line;
-                $line .= $token->text;
-            }
-        }
-
-        var_dump($result);
-
-        return static::make([]);
-
-        // $handle = fopen($file, 'r');
-        // if ($handle) {
-        //     while (($line = fgets($handle)) !== false) {
-
-        //     }
-
-        //     fclose($handle);
-        // }
+        return static::make($body);
     }
 
 
 
     public function __toString(): string
     {
-        $tab   = 4;
-        $space = str_repeat(' ', $tab);
+        $indentation = '    ';
+        $r           = implode("\n", array_map(fn ($line) => "{$indentation}{$line}", explode("\n", $this->body)));
 
-        if (count($this->lines) === 0) {
-            return "{\n\n}";
-        }
-
-        return "{\n" . implode("\n", array_map(fn ($line) => "{$space}{$line}", $this->lines)) . "\n}";
+        return "{\n{$r}\n}";
     }
 }

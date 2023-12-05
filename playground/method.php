@@ -1,6 +1,7 @@
 <?php
 
 use PHPGen\Builders\FunctionBodyBuilder;
+use PHPGen\Parsers\FunctionBodyParser;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -20,22 +21,30 @@ use function PHPGen\buildParameter;
 // ->returnReferenced(['int', 'float'])
 // ->body('return $target = $target + $amount;');
 
-// $fn = function &(int|float &$target, int|float $amount): int|float {return $target = $target + $amount;};
+$fn1 = function &(int|float &$target, int|float $amount): int|float {return $target = $target + $amount;};
 
-
-
-$fn = function &(int|float &$target, int|string $amount = '{'): int|float {
+$fn2 = function &(int|float &$target, int|string $amount = '{'): int|float {
     $int = 12;
     $str = "{$int}";
+    // {{ wow
+        /**
+         * {{ how
+         */
+
+    somefunction(function () {
+
+    });
 
     return $str;
-};
-
-// $fn1 = fn ($a) => $a + 1;
+};function () {};
 
 
-$r = new ReflectionFunction($fn);
+$r1 = new ReflectionFunction($fn1);
+$r2 = new ReflectionFunction($fn2);
+$r3 = (new ReflectionClass(FunctionBodyParser::class))->getMethod('parse');
 
-FunctionBodyBuilder::fromReflection($r);
+FunctionBodyBuilder::fromReflection($r1); echo PHP_EOL;
+FunctionBodyBuilder::fromReflection($r2); echo PHP_EOL;
+FunctionBodyBuilder::fromReflection($r3); echo PHP_EOL;
 
 // FunctionBodyBuilder::fromReflection($r2);
