@@ -79,8 +79,14 @@ function buildType(null|string|array|ReflectionType $from = null): TypeBuilder
     };
 }
 
-function buildFunctionBody(null|string|ReflectionFunctionAbstract $from = null): FunctionBodyBuilder
+function buildFunctionBody(null|string|array|ReflectionFunctionAbstract $from = null): FunctionBodyBuilder
 {
+    $from ??= [];
+
+    if (is_string($from)) {
+        $from = explode("\n", $from);
+    }
+
     return match (true) {
         $from instanceof ReflectionFunctionAbstract => FunctionBodyBuilder::fromReflection($from),
         default                                     => FunctionBodyBuilder::make($from)

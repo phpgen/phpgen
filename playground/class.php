@@ -10,40 +10,61 @@ use function PHPGen\buildProperty;
 
 echo buildClass()->fromObject(new class
 {
-    public $may = 1;
+    public int $may = 1;
 
-    public function hello()
+    public function hello0(int $s, bool $isBool)
     {
+
+    }
+
+    public function hello11()
+    {
+
+
+        $a = 1;
+        $b = "{{{$a}}-1";
+
+        $c = function (int $fp): void {
+            $v = function (): void {
+            };
+        };
+
         echo 'hello';
     }
 
-    public function great(int $s, bool $isBool): float
+    public function hello12(int $s, bool $isBool): float
     {
         return $s + $isBool;
     }
+
 });
 
 echo "\n\n";
 
-// echo buildClass('Cat')
-//     ->final()
-//     ->properties([
-//         buildProperty('color')->public(),
-//         buildProperty('_color')->private(),
-//     ])
-//     ->methods([
-//         buildMethod()
-//             ->parameters([
-//                 buildParameter('str')->type('string'),
-//             ])
-//             ->body("\$a = 'foo' . \$str;\nreturn \$a;")
-//             ->return('string'),
+echo buildClass('Cat')
+    ->final()
+    ->properties([
+        buildProperty('color')->public(),
+        buildProperty('_color')->private(),
+    ])
+    ->methods([
+        buildMethod()
+            ->parameters([
+                buildParameter('str')->type('string'),
+            ])
+            ->body("\$a = \"foo\\nbar\" . \$str;\nreturn \$a;")
+            ->return('string'),
 
-//         buildMethod()->body('echo \'myau\';'),
+        buildMethod()->fromClosure(function &(int $a, array $b): string {
+            $v = implode('-', $b);
 
-//         buildMethod(function (float $amount): void {
-//         })->name('eat')->body('// eat some food'),
-//     ]);
+            return "{$a}  === {$v}";
+        }),
+
+        buildMethod(function (float $amount): void {
+            // eat some food
+        })->name('eat'),
+    ]);
 
 // echo "\n\n";
 

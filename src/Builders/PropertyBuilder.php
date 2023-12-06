@@ -31,7 +31,8 @@ class PropertyBuilder implements BodyMember, Stringable
     public static function fromReflection(ReflectionProperty $reflection): static
     {
         return static::make($reflection->getName())
-            ->visibility(Visibility::tryFromReflection($reflection));
+            ->visibility(Visibility::tryFromReflection($reflection))
+            ->type($reflection->getType());
     }
 
 

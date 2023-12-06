@@ -2,89 +2,60 @@
 
 namespace PHPGen\Parsers;
 
-use ParseError;
 use PHPGen\Exceptions\ParseException;
 use PhpToken;
 use ReflectionFunctionAbstract;
-use ReflectionMethod;
 use SplFileObject;
 
 class FunctionBodyParser
 {
-    public static function parse(ReflectionFunctionAbstract $reflection): string
+    const T_CURLY_OPEN  = 123;
+    const T_CURLY_CLOSE = 125;
+
+    public static function parse(ReflectionFunctionAbstract $reflection): array
     {
-        $isMethod = $reflection instanceof ReflectionMethod;
+        // We assume that source code of reflected function can not be invalid.
+        // Since it must be compiled before passed to reflection constructor.
+        // So there no need of parsing it with TOKEN_PARSE.
 
-        $functionStartLine  = max($reflection->getStartLine() - 1, 0);
-        $functionEndLine    = $reflection->getEndLine();
-        $functionLinesCount = $functionEndLine - $functionStartLine;
+        $source = static::getSource($reflection);
+        $tokens = static::tryTokenize($source);
 
-        $file = new SplFileObject($reflection->getFileName());
-        $file->seek($functionStartLine);
 
-        $functionLines = [];
-        while ($functionLinesCount-- > 0) {
-            $functionLines[] = rtrim($file->fgets());
-        }
+        $braces = static::filterOnlyCurlyBracesTokens($tokens);
+        $count  = 0;
+        $start  = 0;
+        $end    = 0;
 
-        $function = implode("\n", $functionLines);
-
-        $offset = $isMethod ? 7 : 2;
-        $source = $isMethod ? "<?php class T {{$function}}" : "<?php {$function}";
-
-        $tokens = array_slice(static::tryTokenize($source), $offset);
-
-        $body         = '';
-        $braceCount   = 0;
-        $insideString = false;
-
-        for ($i = 0; $i < count($tokens); $i++) {
-            $token = $tokens[$i];
-
-            if ($token->is('"')) {
-                $insideString = !$insideString;
-                $body .= $token->text;
-                continue;
-            }
-
-            if ($insideString) {
-                $body .= $token->text;
-                continue;
-            }
-
-            if ($token->is('{')) {
-                $braceCount++;
-
-                if ($braceCount === 1) {
-                    // Skip first "\n" character if it presented
-                    for ($j = $i + 1; $j < count($tokens); $j++) {
-                        $furtherToken = $tokens[$j];
-
-                        if (!$furtherToken->is(T_WHITESPACE)) {
-                            break;
-                        }
-
-                        if (str_contains($furtherToken->text, "\n")) {
-                            $body .= preg_replace('/\n/', '', $furtherToken->text, 1);
-                            $i = $j;
-                            break;
-                        }
-                    }
-
-                    continue;
-                }
-            }
-            elseif ($token->is('}')) {
-                $braceCount--;
-
-                if ($braceCount === 0) {
+        foreach ($braces as $brace) {
+            if ($brace->id === static::T_CURLY_CLOSE) {
+                if (--$count === 0) {
+                    $end = $brace->pos;
                     break;
                 }
             }
+            elseif ($count++ === 0) {
+                $start = $brace->pos;
+            }
+        }
 
-            if ($braceCount > 0) {
-                $body .= $token->text;
-                continue;
+        $fromStartToEndBrace      = substr($source, 0, $end + 1);
+        $fromStartBraceToEndBrace = substr($fromStartToEndBrace, $start);
+        $rawBody                  = trim($fromStartBraceToEndBrace, '{}');
+
+        if (trim($rawBody) === '') {
+            return [];
+        }
+
+        $body = explode("\n", $rawBody);
+        $size = count($body);
+
+        if ($size > 0) {
+            if (trim($body[$size - 1], "} \n\r\t\v\0") === '') {
+                array_pop($body);
+            }
+            if (trim($body[0], "{ \n\r\t\v\0") === '') {
+                array_shift($body);
             }
         }
 
@@ -93,29 +64,64 @@ class FunctionBodyParser
 
 
 
+    protected static function getSource(ReflectionFunctionAbstract $reflection): string
+    {
+        $lines  = static::getSourceLines($reflection);
+        $string = implode("\n", $lines);
+
+        return "<?php {$string}";
+    }
+
+    protected static function getSourceLines(ReflectionFunctionAbstract $reflection): array
+    {
+        $startLine  = max($reflection->getStartLine() - 1, 0);
+        $endLine    = $reflection->getEndLine();
+        $linesCount = $endLine - $startLine;
+
+        $file = new SplFileObject($reflection->getFileName());
+        $file->seek($startLine);
+
+        $lines = [];
+        while ($linesCount-- > 0) {
+            $lines[] = rtrim($file->fgets());
+        }
+
+        return $lines;
+    }
+
+
+
     /**
-     * @return array<\PhpToken>
+     * @param array<int,\PhpToken> $tokens
+     *
+     * @return array<int,\PhpToken>
+     */
+    protected static function filterOnlyCurlyBracesTokens(array $tokens): array
+    {
+        // TODO: Check if array_key_exists will be more performant?
+        return array_filter($tokens, fn (PhpToken $token): bool => (
+            $token->id    === T_CURLY_OPEN
+            || $token->id === static::T_CURLY_OPEN
+            || $token->id === static::T_CURLY_CLOSE
+        ));
+    }
+
+
+
+    /**
+     * @return array<int,\PhpToken>
      */
     protected static function tryTokenize(string $source): array
     {
-        try {
-            $tokens = PhpToken::tokenize($source);
+        $tokens = PhpToken::tokenize($source);
 
-            static::validateTokens($tokens);
+        static::validateTokens($tokens);
 
-            return $tokens;
-        }
-        catch (ParseError $e) {
-            if (str_starts_with($e->getMessage(), 'Unclosed')) {
-                throw new ParseException('Parser is unable to parse multiple functions which are defined on the same lines.');
-            }
-
-            throw $e;
-        }
+        return $tokens;
     }
 
     /**
-     * @param array<\PhpToken> $tokens
+     * @param array<int,\PhpToken> $tokens
      *
      * @throws ParseException
      */
@@ -128,7 +134,7 @@ class FunctionBodyParser
                 continue;
             }
 
-            if ($token->is(T_FUNCTION) || $token->is(T_FN)) {
+            if ($token->is(T_FUNCTION)) {
                 if ($functionLine === $token->line) {
                     throw new ParseException('Parser is unable to parse multiple functions which are defined on the same lines.');
                 }

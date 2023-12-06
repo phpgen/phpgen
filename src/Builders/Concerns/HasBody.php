@@ -10,6 +10,9 @@ trait HasBody
 
 
 
+    /**
+     * @internal
+     */
     public function body(BodyBuilder $body): static
     {
         $this->body = $body;
@@ -23,7 +26,6 @@ trait HasBody
     }
 
 
-    //region BodyBuilder proxy
     /**
      * @param array<int,string|MethodBuilder|ReflectionMethod> $methods
      */
@@ -99,5 +101,4 @@ trait HasBody
 
         return $this;
     }
-    //endregion
 }

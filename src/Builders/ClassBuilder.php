@@ -116,6 +116,6 @@ class ClassBuilder implements Stringable
 
         $implements = $this->implements ? 'implements ' . implode(', ', $this->implements) : '';
 
-        return trim("{$final}{$abstract} {$readonly}") . ' ' . trim("class {$this->getName()} {$extends}") . ' ' . $implements . $this->body;
+        return trim(trim("{$final}{$abstract} {$readonly}") . ' ' . trim("class {$this->getName()} {$extends}")) . ' ' . $implements . $this->body;
     }
 }
