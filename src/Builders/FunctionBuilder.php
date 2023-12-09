@@ -7,6 +7,7 @@ use PHPGen\Builders\Concerns\HasName;
 use PHPGen\Builders\Concerns\HasReference;
 use PHPGen\Builders\Concerns\HasType;
 use PHPGen\Builders\FunctionBodyBuilder as Body;
+use PHPGen\Exceptions\InvalidSyntaxException;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
 use Stringable;
@@ -28,6 +29,9 @@ class FunctionBuilder implements Stringable
         getType as private _getType;
     }
 
+    /**
+     * @var array<FunctionParameterBuilder>
+     */
     protected array $parameters = [];
     protected ?Body $body       = null;
 
@@ -35,7 +39,7 @@ class FunctionBuilder implements Stringable
 
     public function __construct(?string $name = null)
     {
-        $this->name = $name;
+        $this->name($name);
     }
 
     public static function make(?string $name = null): static
@@ -43,18 +47,20 @@ class FunctionBuilder implements Stringable
         return new static($name);
     }
 
+    public static function fromClosure(Closure $closure): static
+    {
+        return static::fromReflection(new ReflectionFunction($closure))->name(null);
+    }
+    
     public static function fromReflection(ReflectionFunctionAbstract $reflection): static
     {
-        return static::make($reflection->getName())
+        $name = $reflection->isClosure() ? null : $reflection->getName();
+
+        return static::make($name)
             ->parameters($reflection->getParameters())
             ->return($reflection->getReturnType())
             ->returnsByReference($reflection->returnsReference())
             ->body(Body::fromReflection($reflection));
-    }
-
-    public static function fromClosure(Closure $closure): static
-    {
-        return static::fromReflection(new ReflectionFunction($closure))->name(null);
     }
 
 
@@ -79,6 +85,10 @@ class FunctionBuilder implements Stringable
 
     public function addParameter(string|object $parameter): static
     {
+        if (!$parameter instanceof FunctionParameterBuilder) {
+            $parameter = buildParameter($parameter);
+        }
+
         $this->parameters[] = $parameter;
 
         return $this;
@@ -158,8 +168,22 @@ class FunctionBuilder implements Stringable
 
     public function __toString(): string
     {
-        $parameters = implode(', ', $this->parameters);
         $reference  = $this->returnsReference() ? '&' : '';
+
+        /** @var null|FunctionParameterBuilder $parameterWithDefaultValue */
+        $parameterWithDefaultValue = null;
+        foreach ($this->parameters as $parameter) {
+            if ($parameter->hasDefaultValue()) {
+                $parameterWithDefaultValue = $parameter;
+            }
+            elseif ($parameterWithDefaultValue !== null) {
+                $name1 = "\${$parameterWithDefaultValue->getName()}";
+                $name2 = "\${$parameter->getName()}";
+                throw new InvalidSyntaxException("Optional parameter {$name1} declared before required parameter {$name2}");
+            }
+        }
+
+        $parameters = implode(', ', $this->parameters);
         $result     = "function {$reference}{$this->getName()}({$parameters})";
 
         if ($this->getReturnType()->isNotEmpty()) {

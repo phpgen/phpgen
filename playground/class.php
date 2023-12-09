@@ -4,6 +4,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 
 use function PHPGen\buildClass;
+use function PHPGen\buildFunction;
 use function PHPGen\buildMethod;
 use function PHPGen\buildParameter;
 use function PHPGen\buildProperty;
@@ -51,19 +52,20 @@ echo buildClass('Cat')
         buildMethod()
             ->parameters([
                 buildParameter('str')->type('string'),
+                buildParameter('str1')->type('string')->defaultValue('12'),
             ])
             ->body("\$a = \"foo\\nbar\" . \$str;\nreturn \$a;")
             ->return('string'),
 
-        buildMethod()->fromClosure(function &(int $a, array $b): string {
+        buildFunction()->fromClosure(function &(int $a, array $b): string {
             $v = implode('-', $b);
 
             return "{$a}  === {$v}";
         }),
 
-        buildMethod(function (float $amount): void {
-            // eat some food
-        })->name('eat'),
+        // buildMethod(function (float $amount): void {
+        //     // eat some food
+        // })->name('eat'),
     ]);
 
 // echo "\n\n";

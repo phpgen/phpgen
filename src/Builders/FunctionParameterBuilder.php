@@ -2,6 +2,7 @@
 
 namespace PHPGen\Builders;
 
+use PHPGen\Builders\Concerns\HasDefaultValue;
 use PHPGen\Builders\Concerns\HasName;
 use PHPGen\Builders\Concerns\HasReference;
 use PHPGen\Builders\Concerns\HasType;
@@ -13,6 +14,7 @@ class FunctionParameterBuilder implements Stringable
     use HasName;
     use HasReference;
     use HasType;
+    use HasDefaultValue;
 
 
 
@@ -39,6 +41,12 @@ class FunctionParameterBuilder implements Stringable
     {
         $reference = $this->isReference() ? '&' : '';
 
-        return trim("{$this->getType()} {$reference}\${$this->getName()}");
+        $result = trim("{$this->getType()} {$reference}\${$this->getName()}");
+
+        if ($this->hasDefaultValue()) {
+            $result = "{$result} = {$this->defaultValue}";
+        }
+
+        return $result;
     }
 }

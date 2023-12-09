@@ -27,7 +27,7 @@ class ClassBuilder implements Stringable
 
     public function __construct(?string $name = null)
     {
-        $this->name = $name;
+        $this->name($name);
     }
 
     public static function make(?string $name = null): static

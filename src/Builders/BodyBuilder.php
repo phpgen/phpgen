@@ -2,11 +2,15 @@
 
 namespace PHPGen\Builders;
 
+use Closure;
 use PHPGen\Contracts\BodyMember;
 use ReflectionClass;
+use ReflectionFunctionAbstract;
 use ReflectionMethod;
 use ReflectionProperty;
 use Stringable;
+
+use function PHPGen\buildMethod;
 
 /**
  * Body for classes, interfaces, enums.
@@ -36,7 +40,7 @@ class BodyBuilder implements Stringable
 
 
     /**
-     * @param array<int,string|MethodBuilder|ReflectionMethod> $methods
+     * @param array<int,string|MethodBuilder|FunctionBuilder|Closure|ReflectionFunctionAbstract> $methods
      */
     public function methods(array $methods): static
     {
@@ -44,21 +48,22 @@ class BodyBuilder implements Stringable
     }
 
     /**
-     * @param string|array<int,string|MethodBuilder|ReflectionMethod> $methods
+     * @param array<int,string|MethodBuilder|FunctionBuilder|Closure|ReflectionFunctionAbstract> $methods
      */
-    public function addMethods(string|array $methods): static
+    public function addMethods(array $methods): static
     {
-        if (is_string($methods)) {
-            $methods = [$methods];
+        array_walk($methods, $this->addMethod(...));
+
+        return $this;
+    }
+
+    public function addMethod(string|MethodBuilder|FunctionBuilder|Closure|ReflectionFunctionAbstract $method): static
+    {
+        if (!$method instanceof MethodBuilder) {
+            $method = buildMethod($method);
         }
 
-        array_walk($methods, function (string|MethodBuilder|ReflectionMethod $method) {
-            $this->members[] = match (true) {
-                $method instanceof MethodBuilder    => $method,
-                $method instanceof ReflectionMethod => MethodBuilder::fromReflection($method),
-                default                             => MethodBuilder::make($method)
-            };
-        });
+        $this->members[] = $method;
 
         return $this;
     }
