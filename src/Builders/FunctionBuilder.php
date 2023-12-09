@@ -72,20 +72,14 @@ class FunctionBuilder implements Stringable
      */
     public function addParameters(array $parameters): static
     {
-        array_walk($parameters, function (string|object $parameter) {
-            $this->parameters[] = $parameter instanceof FunctionParameterBuilder
-                ? $parameter
-                : buildParameter($parameter);
-        });
+        array_walk($parameters, $this->addParameter(...));
 
         return $this;
     }
 
     public function addParameter(string|object $parameter): static
     {
-        $this->parameters[] = $parameter instanceof FunctionParameterBuilder
-            ? $parameter
-            : buildParameter($parameter);
+        $this->parameters[] = $parameter;
 
         return $this;
     }
