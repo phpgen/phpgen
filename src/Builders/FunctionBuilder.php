@@ -169,20 +169,6 @@ class FunctionBuilder implements Stringable
     public function __toString(): string
     {
         $reference  = $this->returnsReference() ? '&' : '';
-
-        /** @var null|FunctionParameterBuilder $parameterWithDefaultValue */
-        $parameterWithDefaultValue = null;
-        foreach ($this->parameters as $parameter) {
-            if ($parameter->hasDefaultValue()) {
-                $parameterWithDefaultValue = $parameter;
-            }
-            elseif ($parameterWithDefaultValue !== null) {
-                $name1 = "\${$parameterWithDefaultValue->getName()}";
-                $name2 = "\${$parameter->getName()}";
-                throw new InvalidSyntaxException("Optional parameter {$name1} declared before required parameter {$name2}");
-            }
-        }
-
         $parameters = implode(', ', $this->parameters);
         $result     = "function {$reference}{$this->getName()}({$parameters})";
 
