@@ -2,6 +2,7 @@
 
 namespace PHPGen\Builders;
 
+use PHPGen\Builders\Concerns\HasDefaultValue;
 use PHPGen\Builders\Concerns\HasName;
 use PHPGen\Builders\Concerns\HasType;
 use PHPGen\Builders\Concerns\HasVisibility;
@@ -15,6 +16,7 @@ class PropertyBuilder implements BodyMember, Stringable
     use HasName;
     use HasType;
     use HasVisibility;
+    use HasDefaultValue;
 
 
 
@@ -39,8 +41,12 @@ class PropertyBuilder implements BodyMember, Stringable
 
     public function __toString(): string
     {
-        $result = trim("{$this->getType()} \${$this->getName()};");
+        $result = trim("{$this->getType()} \${$this->getName()}");
 
-        return trim("{$this->getVisibility()?->value} {$result}");
+        if ($this->hasDefaultValue()) {
+            $result = "{$result} = {$this->defaultValue}";
+        }
+
+        return "{$result};";
     }
 }

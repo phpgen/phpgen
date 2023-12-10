@@ -45,7 +45,7 @@ echo "\n\n";
 echo buildClass('Cat')
     ->final()
     ->properties([
-        buildProperty('color')->public(),
+        buildProperty('color')->public()->defaultValue("'red'"),
         buildProperty('_color')->private(),
     ])
     ->methods([
