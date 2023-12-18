@@ -84,6 +84,6 @@ describe('TypeBuilder', function () {
 
 describe('FunctionBuilder', function () {
     test('???', function () {
-        var_dump(buildFunction()->type());
+        // var_dump(buildFunction()->type());
     });
 })->group('builders');
