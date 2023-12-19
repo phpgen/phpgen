@@ -2,22 +2,34 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use PHPGen\Builders\FunctionBuilder;
-use PHPGen\Builders\FunctionParameterBuilder;
-use PHPGen\Builders\TypeBuilder;
+use function PHPGen\buildFunction;
+use function PHPGen\buildParameter;
 
-echo FunctionBuilder::make('sum')
+echo buildFunction('sum')
     ->parameters([
-        FunctionParameterBuilder::make('a')->type('int'),
-        FunctionParameterBuilder::make('b')->type('int'),
+        buildParameter('a')->type('int'),
+        buildParameter('b')->type('int'),
     ])
     ->return('int')
     ->body('return $a + $b;');
 
-echo "\n\n";
+echo PHP_EOL;
 
-echo TypeBuilder::make(['int', ['Stringable', 'Arrayable']]);
+echo buildFunction()
+    ->fromClosure(function (int|float $number, int|float $sub): int {
+        $precision = 2;
+        $string    = <<<'HTML'
+            <div></div>
+        HTML;
 
-echo "\n\n";
+        $rounded = (int) round(
+            $number - $sub,
+            min(
+                0,
+                $precision
+            ),
+        );
 
-echo TypeBuilder::make('int');
+        return $rounded;
+    })
+    ->name('subtract');

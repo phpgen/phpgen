@@ -6,8 +6,6 @@ use Closure;
 use PHPGen\Builders\Concerns\HasName;
 use PHPGen\Builders\Concerns\HasReference;
 use PHPGen\Builders\Concerns\HasType;
-use PHPGen\Builders\FunctionBodyBuilder as Body;
-use PHPGen\Exceptions\InvalidSyntaxException;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
 use Stringable;
@@ -33,7 +31,8 @@ class FunctionBuilder implements Stringable
      * @var array<FunctionParameterBuilder>
      */
     protected array $parameters = [];
-    protected ?Body $body       = null;
+
+    protected ?FunctionBodyBuilder $body = null;
 
 
 
@@ -51,7 +50,7 @@ class FunctionBuilder implements Stringable
     {
         return static::fromReflection(new ReflectionFunction($closure))->name(null);
     }
-    
+
     public static function fromReflection(ReflectionFunctionAbstract $reflection): static
     {
         $name = $reflection->isClosure() ? null : $reflection->getName();
@@ -60,7 +59,7 @@ class FunctionBuilder implements Stringable
             ->parameters($reflection->getParameters())
             ->return($reflection->getReturnType())
             ->returnsByReference($reflection->returnsReference())
-            ->body(Body::fromReflection($reflection));
+            ->body(FunctionBodyBuilder::fromReflection($reflection));
     }
 
 
@@ -152,16 +151,16 @@ class FunctionBuilder implements Stringable
 
 
 
-    public function body(null|string|Body $body): static
+    public function body(null|string|array|FunctionBodyBuilder $body): static
     {
-        $this->body = $body instanceof Body ? $body : buildFunctionBody($body);
+        $this->body = $body instanceof FunctionBodyBuilder ? $body : buildFunctionBody($body);
 
         return $this;
     }
 
-    public function getBody(): Body
+    public function getBody(): FunctionBodyBuilder
     {
-        return $this->body ??= Body::make();
+        return $this->body ??= FunctionBodyBuilder::make();
     }
 
 
@@ -169,15 +168,11 @@ class FunctionBuilder implements Stringable
     public function __toString(): string
     {
         $reference  = $this->returnsReference() ? '&' : '';
-        $parameters = implode(', ', $this->parameters);
-        $result     = "function {$reference}{$this->getName()}({$parameters})";
+        $name       = $this->getName();
+        $parameters = implode(', ', $this->getParameters());
+        $return     = ($returnType = $this->getReturnType())->isNotEmpty() ? ": {$returnType}" : '';
+        $body       = (string) $this->getBody();
 
-        if ($this->getReturnType()->isNotEmpty()) {
-            $result .= ": {$this->getReturnType()}";
-        }
-
-        $result .= "\n" . $this->getBody();
-
-        return $result;
+        return "function {$reference}{$name}({$parameters}){$return}\n{$body}";
     }
 }
