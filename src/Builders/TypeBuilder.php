@@ -40,6 +40,10 @@ class TypeBuilder implements Stringable
             throw new ValidationException('Type cannot be empty string.');
         }
 
+        if (str_contains($type, '\\') && !str_starts_with($type, '\\')) {
+            $type = "\\{$type}";
+        }
+
         return new static(TypeParser::parse($type));
     }
 

@@ -6,6 +6,9 @@ use PHPGen\Builders\Concerns\HasBody;
 use PHPGen\Builders\Concerns\HasExtends;
 use PHPGen\Builders\Concerns\HasImplements;
 use PHPGen\Builders\Concerns\HasName;
+use PHPGen\Builders\Concerns\HasNamespace;
+use PHPGen\Sanitizers\NamespaceSanitizer;
+use PHPGen\Validators\NamespaceValidator;
 use ReflectionClass;
 use Stringable;
 
@@ -15,13 +18,15 @@ class ClassBuilder implements Stringable
     use HasExtends;
     use HasImplements;
     use HasName;
-
+    use HasNamespace;
 
     protected bool $isFinal    = false;
     protected bool $isAbstract = false;
     protected bool $isReadonly = false;
 
     protected array $methods = [];
+
+    protected ?string $namespace = null;
 
 
 
@@ -33,6 +38,66 @@ class ClassBuilder implements Stringable
     public static function make(?string $name = null): static
     {
         return new static($name);
+    }
+
+    // public static function fromNamespace(string $namespace): static
+    // {
+    //     return static::make()->namespace($namespace);
+    // }
+
+    // public static function fromNamespaceAndName(string $namespace, string $nameOrNamespacedName): static
+    // {
+    //     $that = static::make();
+
+    //     $namespace            = $that->sanitizeAndValidateNamespace($namespace);
+    //     $nameOrNamespacedName = $that->sanitizeAndValidateNamespace($nameOrNamespacedName);
+        
+    //     [$nameNamespace, $name] = $that->splitIntoNamespaceAndName($nameOrNamespacedName);
+
+    //     if ($nameNamespace !== null) {
+    //         $namespace = str_starts_with($nameNamespace, $namespace)
+    //             ? $nameNamespace
+    //             : $namespace . '\\' . $nameNamespace;
+    //     }
+
+    //     var_dump($namespace, $name);
+
+    //     $that->namespace = $namespace;
+    //     $that->name      = $name;
+
+    //     return $that;
+    // }
+
+    // public static function fromNamespacedName(string $nameOrNamespacedName): static
+    // {
+    //     $that = static::make();
+
+    //     $nameOrNamespacedName = NamespaceValidator::valid(NamespaceSanitizer::sanitize($nameOrNamespacedName));
+
+    //     [$namespace, $name] = $that->splitIntoNamespaceAndName($nameOrNamespacedName);
+
+    //     var_dump($nameOrNamespacedName, $name);
+
+    //     $that->namespace = $namespace;
+    //     $that->name      = $name;
+
+    //     return $that;
+    // }
+
+    public static function fromNamespacedName(string $nameOrNamespacedName, ?string $namespace = null): static
+    {
+        $that = static::make();
+
+        $namespace = NamespaceValidator::valid(NamespaceSanitizer::sanitize($namespace));
+
+        [$namespace, $name] = $that->splitIntoNamespaceAndName($namespace);
+
+        var_dump($namespace, $name);
+
+        $that->namespace = $namespace;
+        $that->name      = $name;
+
+        return $that;
     }
 
     public static function fromReflection(ReflectionClass $reflection): static

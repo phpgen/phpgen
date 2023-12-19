@@ -1,5 +1,7 @@
 <?php
 
+namespace Inch9inch;
+
 require __DIR__ . '/../vendor/autoload.php';
 
 
@@ -13,27 +15,27 @@ echo buildClass()->fromObject(new class
 {
     public int $may = 1;
 
-    public function hello0(int $s, bool $isBool)
-    {
+    // public function hello0(int $s, bool $isBool)
+    // {
 
-    }
+    // }
 
-    public function hello11()
-    {
+    // public function hello11()
+    // {
 
 
-        $a = 1;
-        $b = "{{{$a}}-1";
+    //     $a = 1;
+    //     $b = "{{{$a}}-1";
 
-        $c = function (int $fp): void {
-            $v = function (): void {
-            };
-        };
+    //     $c = function (int $fp): void {
+    //         $v = function (): void {
+    //         };
+    //     };
 
-        echo 'hello';
-    }
+    //     echo 'hello';
+    // }
 
-    public function hello12(int $s, bool $isBool): float
+    public function hello12(\PHPGen\Builders\FunctionBodyBuilder $s, bool $isBool): float
     {
         return $s + $isBool;
     }
@@ -42,7 +44,7 @@ echo buildClass()->fromObject(new class
 
 echo "\n\n";
 
-echo buildClass('Cat')
+echo buildClass()->fromNamespaceAndName('App\\Models', 'App\\Models\\2Foo')
     ->final()
     ->properties([
         buildProperty('color')->public()->defaultValue("'red'"),

@@ -15,7 +15,7 @@ trait HasName
     public function name(?string $name): static
     {
         if ($name !== null) {
-            $name = NameValidator::valid(NameSanitizer::sanitize($name));
+            $name = $this->sanitizeAndValidateName($name);
         }
 
         $this->name = $name;
@@ -34,5 +34,12 @@ trait HasName
         $this->nameHash ??= 'phpgen_' . md5(bin2hex(random_bytes(8)));
 
         return $this->nameHash;
+    }
+
+
+
+    protected function sanitizeAndValidateName(string $name): string
+    {
+        return NameValidator::valid(NameSanitizer::sanitize($name));
     }
 }
