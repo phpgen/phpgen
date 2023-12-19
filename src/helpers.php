@@ -19,6 +19,10 @@ use ReflectionType;
 
 function buildInterface(null|string|ReflectionClass $from = null): InterfaceBuilder
 {
+    if ($from === null) {
+        return InterfaceBuilder::make();
+    }
+
     return match (true) {
         $from instanceof ReflectionClass => InterfaceBuilder::fromReflection($from),
         default                          => InterfaceBuilder::make($from)
@@ -27,14 +31,23 @@ function buildInterface(null|string|ReflectionClass $from = null): InterfaceBuil
 
 function buildClass(null|string|ReflectionClass $from = null): ClassBuilder
 {
+    if ($from === null) {
+        return ClassBuilder::make();
+    }
+
     return match (true) {
         $from instanceof ReflectionClass => ClassBuilder::fromReflection($from),
+        str_contains($from, '\\')        => ClassBuilder::fromNamespace($from),
         default                          => ClassBuilder::make($from)
     };
 }
 
 function buildProperty(null|string|ReflectionProperty $from = null): PropertyBuilder
 {
+    if ($from === null) {
+        return PropertyBuilder::make();
+    }
+
     return match (true) {
         $from instanceof ReflectionProperty => PropertyBuilder::fromReflection($from),
         default                             => PropertyBuilder::make($from)
@@ -43,6 +56,10 @@ function buildProperty(null|string|ReflectionProperty $from = null): PropertyBui
 
 function buildMethod(null|string|ReflectionFunctionAbstract|FunctionBuilder|Closure $from = null): MethodBuilder
 {
+    if ($from === null) {
+        return MethodBuilder::make();
+    }
+
     return match (true) {
         $from instanceof ReflectionFunctionAbstract => MethodBuilder::fromReflection($from),
         $from instanceof FunctionBuilder            => MethodBuilder::fromFunctionBuilder($from),
@@ -53,6 +70,10 @@ function buildMethod(null|string|ReflectionFunctionAbstract|FunctionBuilder|Clos
 
 function buildFunction(null|string|ReflectionFunctionAbstract|Closure $from = null): FunctionBuilder
 {
+    if ($from === null) {
+        return FunctionBuilder::make();
+    }
+
     return match (true) {
         $from instanceof ReflectionFunctionAbstract => FunctionBuilder::fromReflection($from),
         $from instanceof Closure                    => FunctionBuilder::fromClosure($from),
@@ -62,6 +83,10 @@ function buildFunction(null|string|ReflectionFunctionAbstract|Closure $from = nu
 
 function buildParameter(null|string|ReflectionParameter $from = null): FunctionParameterBuilder
 {
+    if ($from === null) {
+        return FunctionParameterBuilder::make();
+    }
+
     return match (true) {
         $from instanceof ReflectionParameter => FunctionParameterBuilder::fromReflection($from),
         default                              => FunctionParameterBuilder::make($from)
@@ -70,7 +95,9 @@ function buildParameter(null|string|ReflectionParameter $from = null): FunctionP
 
 function buildType(null|string|array|ReflectionType $from = null): TypeBuilder
 {
-    $from ??= [];
+    if ($from === null) {
+        return TypeBuilder::make();
+    }
 
     return match (true) {
         $from instanceof ReflectionType => TypeBuilder::fromReflection($from),
@@ -81,7 +108,9 @@ function buildType(null|string|array|ReflectionType $from = null): TypeBuilder
 
 function buildFunctionBody(null|string|array|ReflectionFunctionAbstract $from = null): FunctionBodyBuilder
 {
-    $from ??= [];
+    if ($from === null) {
+        return FunctionBodyBuilder::make();
+    }
 
     if (is_string($from)) {
         $from = explode("\n", $from);
