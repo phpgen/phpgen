@@ -21,8 +21,6 @@ class ClassBuilder implements Stringable
     protected bool $isAbstract = false;
     protected bool $isReadonly = false;
 
-    protected array $methods = [];
-
 
 
     public function __construct(?string $name = null)

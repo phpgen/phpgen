@@ -2,6 +2,7 @@
 
 namespace PHPGen\Builders;
 
+use PHPGen\Builders\Concerns\HasBody;
 use PHPGen\Builders\Concerns\HasMultipleExtends;
 use PHPGen\Builders\Concerns\HasName;
 use ReflectionClass;
@@ -11,6 +12,7 @@ class InterfaceBuilder implements Stringable
 {
     use HasMultipleExtends;
     use HasName;
+    use HasBody;
 
 
 

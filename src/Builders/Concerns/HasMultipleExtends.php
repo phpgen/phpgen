@@ -26,15 +26,19 @@ trait HasMultipleExtends
     /**
      * @param string|array<int,string> $extends
      */
-    public function addExtends(string|array $extends): static
+    public function addExtend(string $extend): static
     {
-        if (is_string($extends)) {
-            $extends = [$extends];
-        }
+        $this->extends[] = NameValidator::valid(NameSanitizer::sanitize($extend));
 
-        array_walk($extends, function (string $extend) {
-            $this->extends[] = NameValidator::valid(NameSanitizer::sanitize($extend));
-        });
+        return $this;
+    }
+
+    /**
+     * @param array<int,string> $extends
+     */
+    public function addExtends(array $extends): static
+    {
+        array_walk($extends, $this->addExtend(...));
 
         return $this;
     }
