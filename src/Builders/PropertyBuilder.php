@@ -13,10 +13,10 @@ use Stringable;
 
 class PropertyBuilder implements BodyMember, Stringable
 {
+    use HasDefaultValue;
     use HasName;
     use HasType;
     use HasVisibility;
-    use HasDefaultValue;
 
 
 

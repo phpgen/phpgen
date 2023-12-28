@@ -11,10 +11,10 @@ use Stringable;
 
 class FunctionParameterBuilder implements Stringable
 {
+    use HasDefaultValue;
     use HasName;
     use HasReference;
     use HasType;
-    use HasDefaultValue;
 
 
 

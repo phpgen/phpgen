@@ -18,7 +18,8 @@ class TypeParser
             PhpToken::tokenize("<?php class Validate { public {$type} \$var; }", TOKEN_PARSE);
 
             return true;
-        } catch (ParseError) {
+        }
+        catch (ParseError) {
             return false;
         }
     }
@@ -34,7 +35,8 @@ class TypeParser
 
         if (str_contains($type, '?')) {
             return [['null'], [trim($type, '?')]];
-        } else {
+        }
+        else {
             return array_map(function (string $type) {
                 return array_map(trim(...), explode('&', trim($type, ' ()')));
             }, explode('|', $type));

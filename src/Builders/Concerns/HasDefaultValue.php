@@ -8,7 +8,7 @@ trait HasDefaultValue
 
 
 
-    public function defaultValue(null|string $defaultValue): static
+    public function defaultValue(?string $defaultValue): static
     {
         $this->defaultValue = $defaultValue;
 

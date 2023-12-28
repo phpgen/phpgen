@@ -6,7 +6,6 @@ use Closure;
 use PHPGen\Contracts\BodyMember;
 use ReflectionClass;
 use ReflectionFunctionAbstract;
-use ReflectionMethod;
 use ReflectionProperty;
 use Stringable;
 

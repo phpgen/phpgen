@@ -21,30 +21,36 @@ use function PHPGen\buildParameter;
 // ->returnReferenced(['int', 'float'])
 // ->body('return $target = $target + $amount;');
 
-$fn1 = function &(int|float &$target, int|float $amount): int|float {return $target = $target + $amount;};
+$fn1 = function &(int|float &$target, int|float $amount): int|float {
+    return $target = $target + $amount;
+};
 
 $fn2 = function &(int|float &$target, int|string $amount = '{'): int|float {
     $int = 12;
     $str = "{$int}";
     // {{ wow
-        /**
-         * {{ how
-         */
-
+    /**
+     * {{ how
+     */
     somefunction(function () {
 
     });
 
     return $str;
-};function () {};
+};
+function () {
+};
 
 
 $r1 = new ReflectionFunction($fn1);
 $r2 = new ReflectionFunction($fn2);
 $r3 = (new ReflectionClass(FunctionBodyParser::class))->getMethod('parse');
 
-FunctionBodyBuilder::fromReflection($r1); echo PHP_EOL;
-FunctionBodyBuilder::fromReflection($r2); echo PHP_EOL;
-FunctionBodyBuilder::fromReflection($r3); echo PHP_EOL;
+FunctionBodyBuilder::fromReflection($r1);
+echo PHP_EOL;
+FunctionBodyBuilder::fromReflection($r2);
+echo PHP_EOL;
+FunctionBodyBuilder::fromReflection($r3);
+echo PHP_EOL;
 
 // FunctionBodyBuilder::fromReflection($r2);

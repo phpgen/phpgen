@@ -28,9 +28,11 @@ class TypeValidator
                     }
                 }
             }
-        } catch (ValidationException $e) {
+        }
+        catch (ValidationException $e) {
             throw $e;
-        } catch (\Throwable) {
+        }
+        catch (\Throwable) {
             throw new ValidationException('Invalid type definition.');
         }
     }
