@@ -2,7 +2,11 @@
 
 namespace PHPGen\Builders\Concerns;
 
+use Closure;
 use PHPGen\Builders\BodyBuilder;
+use PHPGen\Builders\FunctionBuilder;
+use PHPGen\Builders\MethodBuilder;
+use ReflectionFunctionAbstract;
 
 trait HasBody
 {
@@ -27,7 +31,7 @@ trait HasBody
 
 
     /**
-     * @param array<int,string|MethodBuilder|ReflectionMethod> $methods
+     * @param array<int,string|MethodBuilder|FunctionBuilder|Closure|ReflectionFunctionAbstract> $methods
      */
     public function methods(array $methods): static
     {
@@ -36,10 +40,17 @@ trait HasBody
         return $this;
     }
 
+    public function addMethod(string|MethodBuilder|FunctionBuilder|Closure|ReflectionFunctionAbstract $method): static
+    {
+        $this->getBody()->addMethod($method);
+
+        return $this;
+    }
+
     /**
-     * @param string|array<int,string|MethodBuilder|ReflectionMethod> $methods
+     * @param array<int,string|MethodBuilder|FunctionBuilder|Closure|ReflectionFunctionAbstract> $methods
      */
-    public function addMethods(string|array $methods): static
+    public function addMethods(array $methods): static
     {
         $this->getBody()->addMethods($methods);
 
